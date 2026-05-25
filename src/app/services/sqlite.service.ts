@@ -153,8 +153,8 @@ export class SqliteService {
     if (!hasSettings) {
       this.db.run(`
         INSERT INTO local_settings (key, value) VALUES 
-        ('supabase_url', 'https://khtvlgfxarznwbzhemrx.supabase.co'),
-        ('supabase_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtodHZsZ2Z4YXJ6bndiemhlbXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjE4OTMsImV4cCI6MjA5MTQzNzg5M30.WK1BSaSC_EHVIz6-VmepZFJcGfMR9PjvTh834rz-wsc')
+        ('supabase_url', 'https://ceysoodnrvimldsczelc.supabase.co'),
+        ('supabase_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNleXNvb2RucnZpbWxkc2N6ZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIxNTksImV4cCI6MjA5NTMxODE1OX0.GQxX-OiMU8AsaJnmucYtKDEEV_33e3-AvNUbXLxFVow')
       `);
     }
 
