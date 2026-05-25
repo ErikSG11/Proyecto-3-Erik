@@ -19,7 +19,7 @@ export class SupabaseService {
    */
   async initialize(): Promise<boolean> {
     try {
-      // Get saved credentials from SQLite
+      console.log('SupabaseService: Leyendo credenciales de SQLite...');
       const urlSetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_url'");
       const keySetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_key'");
 
@@ -29,6 +29,7 @@ export class SupabaseService {
       if (url && key) {
         this.supabaseUrl = url;
         this.supabaseKey = key;
+        console.log('SupabaseService: Inicializando cliente con URL:', url);
         this.supabase = createClient(url, key, {
           auth: {
             persistSession: true,
@@ -38,18 +39,22 @@ export class SupabaseService {
         
         // Listen to Auth State Changes to update profile reactive signal
         this.supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('SupabaseService: onAuthStateChange event:', event, 'session:', session?.user?.id);
           if (session?.user) {
             try {
+              console.log('SupabaseService: Cargando perfil para usuario:', session.user.id);
               const profile = await this.getUserProfile(session.user.id);
+              console.log('SupabaseService: Perfil cargado con éxito:', profile);
               this.currentUserProfile.set(profile);
             } catch (e) {
-              console.warn('Failed to load user profile on auth change:', e);
+              console.warn('SupabaseService: Error al cargar perfil, usando fallback:', e);
               this.currentUserProfile.set({
                 id: session.user.id,
                 username: session.user.email?.split('@')[0] || 'Entrenador'
               });
             }
           } else {
+            console.log('SupabaseService: No hay sesión activa. Limpiando perfil.');
             this.currentUserProfile.set(null);
           }
         });
@@ -69,6 +74,7 @@ export class SupabaseService {
    */
   async updateCredentials(url: string, key: string): Promise<boolean> {
     try {
+      console.log('SupabaseService: Actualizando credenciales...');
       this.sqliteService.run(
         "INSERT OR REPLACE INTO local_settings (key, value) VALUES ('supabase_url', ?)",
         [url]
@@ -88,18 +94,22 @@ export class SupabaseService {
       });
 
       this.supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('SupabaseService (Updated): onAuthStateChange event:', event, 'session:', session?.user?.id);
         if (session?.user) {
           try {
+            console.log('SupabaseService (Updated): Cargando perfil para usuario:', session.user.id);
             const profile = await this.getUserProfile(session.user.id);
+            console.log('SupabaseService (Updated): Perfil cargado con éxito:', profile);
             this.currentUserProfile.set(profile);
           } catch (e) {
-            console.warn('Failed to load user profile on auth change:', e);
+            console.warn('SupabaseService (Updated): Error al cargar perfil:', e);
             this.currentUserProfile.set({
               id: session.user.id,
               username: session.user.email?.split('@')[0] || 'Entrenador'
             });
           }
         } else {
+          console.log('SupabaseService (Updated): No hay sesión activa.');
           this.currentUserProfile.set(null);
         }
       });
@@ -126,18 +136,25 @@ export class SupabaseService {
   // --- AUTH METHODS ---
 
   async signUp(email: string, username: string, secret: string) {
+    console.log('SupabaseService: signUp llamado para', email);
     if (!this.supabase) throw new Error('Supabase no configurado');
     
     // Create Auth User
+    console.log('SupabaseService: Enviando petición de signUp a auth...');
     const { data: authData, error: authError } = await this.supabase.auth.signUp({
       email,
       password: secret
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      console.error('SupabaseService: Error en auth.signUp:', authError);
+      throw authError;
+    }
     if (!authData.user) throw new Error('No se pudo registrar el usuario');
+    console.log('SupabaseService: Usuario de auth creado:', authData.user.id);
 
     // Create profile
+    console.log('SupabaseService: Insertando en la tabla profiles...');
     const { error: profileError } = await this.supabase
       .from('profiles')
       .insert({
@@ -147,27 +164,37 @@ export class SupabaseService {
 
     if (profileError) {
       console.error('Error al guardar el perfil en la base de datos:', profileError);
+    } else {
+      console.log('SupabaseService: Registro de perfil completado con éxito.');
     }
 
     return authData.user;
   }
 
   async signIn(email: string, secret: string) {
+    console.log('SupabaseService: signIn llamado para', email);
     if (!this.supabase) throw new Error('Supabase no configurado');
+    console.log('SupabaseService: Enviando petición de signIn a auth...');
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email,
       password: secret
     });
-    if (error) throw error;
+    if (error) {
+      console.error('SupabaseService: Error en auth.signIn:', error);
+      throw error;
+    }
+    console.log('SupabaseService: Inicio de sesión de auth exitoso para:', data.user?.id);
     return data.user;
   }
 
   async signOut() {
+    console.log('SupabaseService: signOut llamado');
     if (!this.supabase) return;
     await this.supabase.auth.signOut();
   }
 
   async getUserProfile(userId: string) {
+    console.log('SupabaseService: getUserProfile llamado para', userId);
     if (!this.supabase) throw new Error('Supabase no configurado');
     const { data, error } = await this.supabase
       .from('profiles')
@@ -175,7 +202,10 @@ export class SupabaseService {
       .eq('id', userId)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('SupabaseService: Error en getUserProfile:', error);
+      throw error;
+    }
     return data;
   }
 
