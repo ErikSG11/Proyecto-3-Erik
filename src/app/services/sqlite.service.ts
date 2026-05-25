@@ -142,6 +142,22 @@ export class SqliteService {
       );
     `);
 
+    // Pre-populate with default active Supabase project credentials if not present
+    const checkUrl = this.db.prepare("SELECT value FROM local_settings WHERE key = 'supabase_url'");
+    let hasSettings = false;
+    if (checkUrl.step()) {
+      hasSettings = true;
+    }
+    checkUrl.free();
+
+    if (!hasSettings) {
+      this.db.run(`
+        INSERT INTO local_settings (key, value) VALUES 
+        ('supabase_url', 'https://khtvlgfxarznwbzhemrx.supabase.co'),
+        ('supabase_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtodHZsZ2Z4YXJ6bndiemhlbXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjE4OTMsImV4cCI6MjA5MTQzNzg5M30.WK1BSaSC_EHVIz6-VmepZFJcGfMR9PjvTh834rz-wsc')
+      `);
+    }
+
     // Table for local match history (vs CPU)
     this.db.run(`
       CREATE TABLE IF NOT EXISTS local_match_history (
