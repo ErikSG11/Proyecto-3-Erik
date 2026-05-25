@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, effect } from '@angular/core';
+import { Component, OnInit, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { SupabaseService } from './services/supabase.service';
@@ -12,14 +12,14 @@ import { SqliteService } from './services/sqlite.service';
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  isSupabaseConfigured = signal(false);
-  userProfile = signal<any>(null);
+  private sqliteService = inject(SqliteService);
+  private supabaseService = inject(SupabaseService);
+  private router = inject(Router);
 
-  constructor(
-    private sqliteService: SqliteService,
-    private supabaseService: SupabaseService,
-    private router: Router
-  ) {}
+  isSupabaseConfigured = signal(false);
+  userProfile = this.supabaseService.currentUserProfile;
+
+  constructor() {}
 
   async ngOnInit() {
     // 1. Initialize local SQLite
@@ -28,30 +28,10 @@ export class App implements OnInit {
     // 2. Initialize Supabase
     const isOk = await this.supabaseService.initialize();
     this.isSupabaseConfigured.set(isOk);
-
-    if (isOk) {
-      this.checkSession();
-    }
-  }
-
-  async checkSession() {
-    try {
-      const user = await this.supabaseService.getCurrentUser();
-      if (user) {
-        const profile = await this.supabaseService.getUserProfile(user.id);
-        this.userProfile.set(profile);
-      } else {
-        this.userProfile.set(null);
-      }
-    } catch (e) {
-      console.warn('Session check failed:', e);
-      this.userProfile.set(null);
-    }
   }
 
   async handleSignOut() {
     await this.supabaseService.signOut();
-    this.userProfile.set(null);
     alert('Has cerrado sesión correctamente.');
     this.router.navigate(['/']);
   }

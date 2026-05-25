@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { SqliteService } from './sqlite.service';
 
@@ -9,6 +9,8 @@ export class SupabaseService {
   private supabase: SupabaseClient | null = null;
   private supabaseUrl: string = '';
   private supabaseKey: string = '';
+  
+  currentUserProfile = signal<any>(null);
 
   constructor(private sqliteService: SqliteService) {}
 
@@ -33,6 +35,25 @@ export class SupabaseService {
             autoRefreshToken: true
           }
         });
+        
+        // Listen to Auth State Changes to update profile reactive signal
+        this.supabase.auth.onAuthStateChange(async (event, session) => {
+          if (session?.user) {
+            try {
+              const profile = await this.getUserProfile(session.user.id);
+              this.currentUserProfile.set(profile);
+            } catch (e) {
+              console.warn('Failed to load user profile on auth change:', e);
+              this.currentUserProfile.set({
+                id: session.user.id,
+                username: session.user.email?.split('@')[0] || 'Entrenador'
+              });
+            }
+          } else {
+            this.currentUserProfile.set(null);
+          }
+        });
+
         console.log('Supabase client successfully initialized with saved settings');
         return true;
       }
@@ -65,6 +86,24 @@ export class SupabaseService {
           autoRefreshToken: true
         }
       });
+
+      this.supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session?.user) {
+          try {
+            const profile = await this.getUserProfile(session.user.id);
+            this.currentUserProfile.set(profile);
+          } catch (e) {
+            console.warn('Failed to load user profile on auth change:', e);
+            this.currentUserProfile.set({
+              id: session.user.id,
+              username: session.user.email?.split('@')[0] || 'Entrenador'
+            });
+          }
+        } else {
+          this.currentUserProfile.set(null);
+        }
+      });
+
       console.log('Supabase client reinitialized with new credentials');
       return true;
     } catch (e) {

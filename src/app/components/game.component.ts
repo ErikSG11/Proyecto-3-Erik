@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, WritableSignal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, WritableSignal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -352,6 +352,13 @@ interface PlayerState {
   `
 })
 export class GameComponent implements OnInit, OnDestroy {
+  private activatedRoute = inject(ActivatedRoute);
+  private pokeApiService = inject(PokeApiService);
+  private deckService = inject(DeckService);
+  private supabaseService = inject(SupabaseService);
+  private sqliteService = inject(SqliteService);
+  private router = inject(Router);
+
   isOnlineMode = false;
   
   // Game state representation
@@ -369,7 +376,7 @@ export class GameComponent implements OnInit, OnDestroy {
   currentRoomCode = signal('');
   roomId = '';
   myRole: 'p1' | 'p2' = 'p1';
-  currentUserProfile = signal<any>(null);
+  currentUserProfile = this.supabaseService.currentUserProfile;
   loadingOnline = signal(false);
   realtimeSubscription: any = null;
 
@@ -386,18 +393,11 @@ export class GameComponent implements OnInit, OnDestroy {
   usedSkillsThisTurn: number[] = [];
   attackedCardsThisTurn: number[] = [];
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private pokeApiService: PokeApiService,
-    private deckService: DeckService,
-    private supabaseService: SupabaseService,
-    private sqliteService: SqliteService,
-    private router: Router
-  ) {}
+  constructor() {}
 
   async ngOnInit() {
     await this.sqliteService.initialize();
-    this.isOnlineMode = this.activatedRoute.snapshot.url[0]?.path === 'online';
+    this.isOnlineMode = this.router.url.includes('online');
 
     const configured = await this.supabaseService.initialize();
     if (this.isOnlineMode) {
@@ -406,14 +406,20 @@ export class GameComponent implements OnInit, OnDestroy {
         this.router.navigate(['/settings']);
         return;
       }
-      const user = await this.supabaseService.getCurrentUser();
+      
+      // Esperar brevemente a que se resuelva la sesión reactiva
+      let retries = 5;
+      while (!this.currentUserProfile() && retries > 0) {
+        await new Promise(r => setTimeout(r, 200));
+        retries--;
+      }
+
+      const user = this.currentUserProfile();
       if (!user) {
         alert('Debes registrarte o iniciar sesión para poder jugar partidas en línea.');
         this.router.navigate(['/auth']);
         return;
       }
-      const profile = await this.supabaseService.getUserProfile(user.id);
-      this.currentUserProfile.set(profile);
     } else {
       // Local CPU game setup
       this.startCpuGame();
