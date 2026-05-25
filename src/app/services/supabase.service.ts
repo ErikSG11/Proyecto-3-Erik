@@ -43,14 +43,21 @@ export class SupabaseService {
           if (session?.user) {
             try {
               console.log('SupabaseService: Cargando perfil para usuario:', session.user.id);
-              const profile = await this.getUserProfile(session.user.id);
+              let profile = null;
+              try {
+                profile = await this.getUserProfile(session.user.id);
+              } catch (e) {
+                console.log('SupabaseService: Perfil no encontrado en base de datos. Creando perfil con metadatos...');
+                const username = session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador';
+                profile = await this.createProfile(session.user.id, username);
+              }
               console.log('SupabaseService: Perfil cargado con éxito:', profile);
               this.currentUserProfile.set(profile);
             } catch (e) {
-              console.warn('SupabaseService: Error al cargar perfil, usando fallback:', e);
+              console.warn('SupabaseService: Error al cargar o crear perfil, usando fallback:', e);
               this.currentUserProfile.set({
                 id: session.user.id,
-                username: session.user.email?.split('@')[0] || 'Entrenador'
+                username: session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador'
               });
             }
           } else {
@@ -98,14 +105,21 @@ export class SupabaseService {
         if (session?.user) {
           try {
             console.log('SupabaseService (Updated): Cargando perfil para usuario:', session.user.id);
-            const profile = await this.getUserProfile(session.user.id);
+            let profile = null;
+            try {
+              profile = await this.getUserProfile(session.user.id);
+            } catch (e) {
+              console.log('SupabaseService (Updated): Creando perfil con metadatos...');
+              const username = session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador';
+              profile = await this.createProfile(session.user.id, username);
+            }
             console.log('SupabaseService (Updated): Perfil cargado con éxito:', profile);
             this.currentUserProfile.set(profile);
           } catch (e) {
-            console.warn('SupabaseService (Updated): Error al cargar perfil:', e);
+            console.warn('SupabaseService (Updated): Error al cargar o crear perfil:', e);
             this.currentUserProfile.set({
               id: session.user.id,
-              username: session.user.email?.split('@')[0] || 'Entrenador'
+              username: session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador'
             });
           }
         } else {
@@ -139,11 +153,16 @@ export class SupabaseService {
     console.log('SupabaseService: signUp llamado para', email);
     if (!this.supabase) throw new Error('Supabase no configurado');
     
-    // Create Auth User
+    // Create Auth User with username metadata
     console.log('SupabaseService: Enviando petición de signUp a auth...');
     const { data: authData, error: authError } = await this.supabase.auth.signUp({
       email,
-      password: secret
+      password: secret,
+      options: {
+        data: {
+          username: username
+        }
+      }
     });
 
     if (authError) {
@@ -151,24 +170,31 @@ export class SupabaseService {
       throw authError;
     }
     if (!authData.user) throw new Error('No se pudo registrar el usuario');
-    console.log('SupabaseService: Usuario de auth creado:', authData.user.id);
-
-    // Create profile
-    console.log('SupabaseService: Insertando en la tabla profiles...');
-    const { error: profileError } = await this.supabase
-      .from('profiles')
-      .insert({
-        id: authData.user.id,
-        username: username
-      });
-
-    if (profileError) {
-      console.error('Error al guardar el perfil en la base de datos:', profileError);
-    } else {
-      console.log('SupabaseService: Registro de perfil completado con éxito.');
-    }
+    console.log('SupabaseService: Usuario de auth creado (sin confirmar):', authData.user.id);
 
     return authData.user;
+  }
+
+  /**
+   * Helper to create profile on first login.
+   */
+  async createProfile(id: string, username: string) {
+    if (!this.supabase) throw new Error('Supabase no configurado');
+    console.log('SupabaseService: Insertando en la tabla profiles para id:', id, 'username:', username);
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .insert({
+        id: id,
+        username: username
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('SupabaseService: Error en createProfile:', error);
+      throw error;
+    }
+    return data;
   }
 
   async signIn(email: string, secret: string) {
