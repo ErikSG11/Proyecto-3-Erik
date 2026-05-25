@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import initSqlJs from 'sql.js';
+
+declare var initSqlJs: any;
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +21,16 @@ export class SqliteService {
     if (this.isInitialized) return;
 
     try {
-      const SQL = await initSqlJs({
-        locateFile: (file) => `/${file}`
+      console.log('Initializing SQLite WASM from global scope...');
+      
+      const initFunc = (window as any).initSqlJs || (typeof initSqlJs !== 'undefined' ? initSqlJs : null);
+
+      if (!initFunc) {
+        throw new Error('initSqlJs no está disponible. Asegúrate de incluir node_modules/sql.js/dist/sql-wasm-browser.js en "scripts" dentro de angular.json.');
+      }
+
+      const SQL = await initFunc({
+        locateFile: (file: string) => `/${file}`
       });
 
       const savedBytes = await this.loadFromIndexedDB();

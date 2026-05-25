@@ -27,6 +27,9 @@
             ],
             "styles": [
               "src/styles.css"
+            ],
+            "scripts": [
+              "node_modules/sql.js/dist/sql-wasm-browser.js"
             ]
           },
           "configurations": {
