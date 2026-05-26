@@ -121,34 +121,40 @@ interface PlayerState {
           <div class="grid grid-cols-5 gap-3 bg-slate-950/70 p-3 rounded-2xl border border-slate-850/60 min-h-[160px] relative">
             <div *ngFor="let slotIdx of [0,1,2,3,4]" 
                  (click)="selectOpponentFieldCard(slotIdx)"
-                 class="border border-dashed rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-200"
-                 [ngClass]="{
-                   'border-slate-800 bg-slate-900/10': !opponentState().field[slotIdx],
-                   'border-red-500 bg-red-950/10 hover:scale-102 ring-2 ring-red-500/30 cursor-pointer': opponentState().field[slotIdx] && attackingCard(),
-                   'border-slate-850 bg-slate-900 shadow-md': opponentState().field[slotIdx] && !attackingCard()
-                 }">
+                 class="rounded-xl flex flex-col items-center justify-center p-0.5 relative overflow-hidden transition-all duration-200"
+                 [ngClass]="[
+                   !opponentState().field[slotIdx] ? 'border border-dashed border-slate-800 bg-slate-900/10' : getCardFrameClass(opponentState().field[slotIdx].type),
+                   opponentState().field[slotIdx] && attackingCard() ? 'ring-4 ring-red-500/60 hover:scale-102 cursor-pointer shadow-md' : '',
+                   opponentState().field[slotIdx] && !attackingCard() ? 'shadow-md' : ''
+                 ]">
               
               <!-- If card in slot -->
               <ng-container *ngIf="opponentState().field[slotIdx] as card">
-                <div class="relative w-full h-full flex flex-col justify-between items-center text-center">
-                  <!-- Mode tag -->
-                  <span class="text-[8px] font-bold px-1.5 py-0.5 rounded absolute -top-1 -left-1 z-10"
-                        [ngClass]="card.position === 'attack' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
-                    {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
-                  </span>
-
-                  <!-- Card image (turned sideways if in defense mode) -->
-                  <div class="h-20 flex items-center justify-center transition-transform duration-300"
-                       [class.rotate-90]="card.position === 'defense'">
-                    <img [src]="card.image" class="h-16 w-auto object-contain">
+                <div class="relative w-full h-full rounded-[10px] bg-slate-950/95 p-1.5 flex flex-col justify-between items-center text-center overflow-hidden">
+                  <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+                  
+                  <!-- Header: Name & Type Icon -->
+                  <div class="w-full flex justify-between items-center px-0.5 z-10">
+                    <span class="text-[7px] font-black text-slate-300 truncate max-w-[45px] uppercase">{{ card.name }}</span>
+                    <span class="text-[7px] font-bold text-amber-400 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
                   </div>
 
-                  <h5 class="text-[10px] font-bold text-slate-200 truncate w-full">{{ card.name }}</h5>
-                  
-                  <div class="flex gap-2 text-[9px] font-mono text-slate-400 mt-1">
-                    <span [class.text-emerald-400]="card.position === 'attack'">HP:{{ card.hp }}</span>
-                    <span *ngIf="card.position === 'attack'" class="text-red-400">ATK:{{ card.attack }}</span>
-                    <span *ngIf="card.position === 'defense'" class="text-blue-400">DEF:{{ card.defense }}</span>
+                  <!-- Card image (turned sideways if in defense mode) -->
+                  <div class="h-16 flex items-center justify-center transition-transform duration-300 z-10"
+                       [class.rotate-90]="card.position === 'defense'">
+                    <img [src]="card.image" class="h-12 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  </div>
+
+                  <!-- Footer Stats & Mode Badge -->
+                  <div class="w-full flex justify-between items-center px-0.5 z-10 border-t border-slate-900/60 pt-1 mt-0.5">
+                    <span class="text-[7px] font-bold px-1 py-0.2 rounded font-mono"
+                          [ngClass]="card.position === 'attack' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
+                      {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
+                    </span>
+                    <div class="flex gap-1 text-[7px] font-mono font-bold text-slate-400">
+                      <span *ngIf="card.position === 'attack'" class="text-red-400">A:{{ card.attack }}</span>
+                      <span *ngIf="card.position === 'defense'" class="text-blue-400">D:{{ card.defense }}</span>
+                    </div>
                   </div>
                 </div>
               </ng-container>
@@ -198,42 +204,44 @@ interface PlayerState {
                    [ngClass]="playerState().lp > 1000 ? 'text-teal-400' : 'text-rose-400 animate-pulse'">
                 {{ playerState().lp }}
               </div>
-            </div>
-          </div>
-
-          <!-- Player Cards on Field (5 Slots) -->
+                     <!-- Player Cards on Field (5 Slots) -->
           <div class="grid grid-cols-5 gap-3 bg-slate-950/70 p-3 rounded-2xl border border-slate-850/60 min-h-[160px]">
             <div *ngFor="let slotIdx of [0,1,2,3,4]" 
                  (click)="selectPlayerFieldCard(slotIdx)"
-                 class="border border-dashed rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-200"
-                 [ngClass]="{
-                   'border-slate-800 bg-slate-900/10': !playerState().field[slotIdx],
-                   'border-teal-500 ring-2 ring-teal-500/30 cursor-pointer bg-slate-900 shadow-md': playerState().field[slotIdx] && isMyTurn(),
-                   'border-slate-850 bg-slate-900': playerState().field[slotIdx] && !isMyTurn(),
-                   'ring-2 ring-amber-400/50': activeFieldSelection()?.slotIdx === slotIdx
-                 }">
+                 class="rounded-xl flex flex-col items-center justify-center p-0.5 relative overflow-hidden transition-all duration-200"
+                 [ngClass]="[
+                   !playerState().field[slotIdx] ? 'border border-dashed border-slate-800 bg-slate-900/10' : getCardFrameClass(playerState().field[slotIdx].type),
+                   playerState().field[slotIdx] && isMyTurn() ? 'cursor-pointer hover:scale-102 shadow-md' : '',
+                   activeFieldSelection()?.slotIdx === slotIdx ? 'ring-4 ring-amber-400' : ''
+                 ]">
               
               <!-- If card in slot -->
               <ng-container *ngIf="playerState().field[slotIdx] as card">
-                <div class="relative w-full h-full flex flex-col justify-between items-center text-center">
-                  <!-- Mode tag -->
-                  <span class="text-[8px] font-bold px-1.5 py-0.5 rounded absolute -top-1 -left-1 z-10"
-                        [ngClass]="card.position === 'attack' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
-                    {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
-                  </span>
-
-                  <!-- Image (turned sideways if in defense mode) -->
-                  <div class="h-20 flex items-center justify-center transition-transform duration-300"
-                       [class.rotate-90]="card.position === 'defense'">
-                    <img [src]="card.image" class="h-16 w-auto object-contain">
+                <div class="relative w-full h-full rounded-[10px] bg-slate-950/95 p-1.5 flex flex-col justify-between items-center text-center overflow-hidden">
+                  <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+                  
+                  <!-- Header: Name & Type Icon -->
+                  <div class="w-full flex justify-between items-center px-0.5 z-10">
+                    <span class="text-[7px] font-black text-slate-300 truncate max-w-[45px] uppercase">{{ card.name }}</span>
+                    <span class="text-[7px] font-bold text-amber-400 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
                   </div>
 
-                  <h5 class="text-[10px] font-bold text-slate-200 truncate w-full">{{ card.name }}</h5>
-                  
-                  <div class="flex gap-2 text-[9px] font-mono text-slate-400 mt-1">
-                    <span [class.text-emerald-400]="card.position === 'attack'">HP:{{ card.hp }}</span>
-                    <span *ngIf="card.position === 'attack'" class="text-red-400">ATK:{{ card.attack }}</span>
-                    <span *ngIf="card.position === 'defense'" class="text-blue-400">DEF:{{ card.defense }}</span>
+                  <!-- Card image (turned sideways if in defense mode) -->
+                  <div class="h-16 flex items-center justify-center transition-transform duration-300 z-10"
+                       [class.rotate-90]="card.position === 'defense'">
+                    <img [src]="card.image" class="h-12 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  </div>
+
+                  <!-- Footer Stats & Mode Badge -->
+                  <div class="w-full flex justify-between items-center px-0.5 z-10 border-t border-slate-900/60 pt-1 mt-0.5">
+                    <span class="text-[7px] font-bold px-1 py-0.2 rounded font-mono"
+                          [ngClass]="card.position === 'attack' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
+                      {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
+                    </span>
+                    <div class="flex gap-1 text-[7px] font-mono font-bold text-slate-400">
+                      <span *ngIf="card.position === 'attack'" class="text-red-400">A:{{ card.attack }}</span>
+                      <span *ngIf="card.position === 'defense'" class="text-blue-400">D:{{ card.defense }}</span>
+                    </div>
                   </div>
                 </div>
               </ng-container>
@@ -246,15 +254,31 @@ interface PlayerState {
           <!-- HAND: Cards in Hand -->
           <div class="bg-slate-950/80 p-3 rounded-2xl border border-slate-850/60 mt-2">
             <span class="text-xxs uppercase tracking-wider text-slate-500 font-bold block mb-2 px-1">Tu Mano (Haz clic para invocar)</span>
-            <div class="flex gap-3 overflow-x-auto pb-2 min-h-[110px]">
+            <div class="flex gap-3 overflow-x-auto pb-2 min-h-[155px]">
               <div *ngFor="let card of playerState().hand; let i = index" 
                    (click)="summonCard(card, i)"
-                   class="bg-slate-900 border border-slate-800 hover:border-teal-500 hover:-translate-y-1 rounded-xl p-2 min-w-[90px] max-w-[90px] flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-200">
-                <img [src]="card.image" [alt]="card.name" class="h-12 w-auto object-contain">
-                <h6 class="text-[9px] font-bold text-slate-300 truncate w-full mt-1">{{ card.name }}</h6>
-                <div class="flex gap-1 text-[8px] font-mono text-slate-500 mt-0.5">
-                  <span class="text-red-400">A:{{ card.attack }}</span>
-                  <span class="text-blue-400">D:{{ card.defense }}</span>
+                   class="p-0.5 rounded-[14px] min-w-[100px] max-w-[100px] h-[145px] flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-200 hover:-translate-y-2 hover:shadow-xl shadow-md"
+                   [ngClass]="getCardFrameClass(card.type)">
+                
+                <div class="bg-slate-950/95 w-full h-full rounded-[12px] p-1.5 flex flex-col justify-between relative overflow-hidden">
+                  <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+                  
+                  <!-- Header: Name & Type Icon -->
+                  <div class="w-full flex justify-between items-center z-10">
+                    <span class="text-[7.5px] font-black text-slate-200 truncate max-w-[48px] uppercase">{{ card.name }}</span>
+                    <span class="text-[7px] font-bold text-amber-400 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
+                  </div>
+
+                  <!-- Image Container -->
+                  <div class="h-14 bg-slate-900/60 rounded border border-slate-900 flex items-center justify-center relative overflow-hidden z-10">
+                    <img [src]="card.image" class="h-10 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  </div>
+
+                  <!-- Footer Stats -->
+                  <div class="grid grid-cols-2 gap-0.5 border-t border-slate-900/60 pt-1 text-[7px] font-mono font-bold z-10">
+                    <div class="text-red-400">⚔️{{ card.attack }}</div>
+                    <div class="text-blue-400">🛡️{{ card.defense }}</div>
+                  </div>
                 </div>
               </div>
 
@@ -1133,6 +1157,90 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.realtimeSubscription) {
       this.supabaseService.client.removeChannel(this.realtimeSubscription);
       this.realtimeSubscription = null;
+    }
+  }
+
+  getTypeBgClass(type: string): string {
+    switch (type) {
+      case 'fire': return 'bg-red-500';
+      case 'water': return 'bg-blue-500';
+      case 'grass': return 'bg-emerald-500';
+      case 'electric': return 'bg-yellow-500';
+      case 'psychic': return 'bg-purple-500';
+      default: return 'bg-slate-500';
+    }
+  }
+
+  getTypeEmoji(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'fire': return '🔥 FUEGO';
+      case 'water': return '💧 AGUA';
+      case 'grass': return '🌿 PLANTA';
+      case 'electric': return '⚡ ELECT.';
+      case 'psychic': return '👁️ PSIC.';
+      case 'normal': return '⚙️ NORMAL';
+      case 'poison': return '☠️ VENENO';
+      case 'ground': return '⛰️ TIERRA';
+      case 'flying': return '💨 VOLAD.';
+      case 'bug': return '🐛 BICHO';
+      case 'rock': return '🪨 ROCA';
+      case 'ghost': return '👻 FANT.';
+      case 'dragon': return '🐉 DRAGÓN';
+      case 'steel': return '⛓️ ACERO';
+      case 'fairy': return '✨ HADA';
+      case 'ice': return '❄️ HIELO';
+      default: return '🛡️ ' + type.toUpperCase();
+    }
+  }
+
+  getCardFrameClass(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'fire': return 'bg-gradient-to-br from-red-600 via-orange-500 to-yellow-600 shadow-red-500/15';
+      case 'water': return 'bg-gradient-to-br from-blue-600 via-cyan-500 to-indigo-600 shadow-blue-500/15';
+      case 'grass': return 'bg-gradient-to-br from-green-600 via-emerald-500 to-teal-600 shadow-green-500/15';
+      case 'electric': return 'bg-gradient-to-br from-yellow-500 via-amber-400 to-orange-500 shadow-yellow-500/15';
+      case 'psychic': return 'bg-gradient-to-br from-purple-600 via-fuchsia-500 to-pink-600 shadow-purple-500/15';
+      case 'poison': return 'bg-gradient-to-br from-fuchsia-800 via-purple-700 to-violet-800 shadow-purple-800/15';
+      case 'ground': return 'bg-gradient-to-br from-amber-800 via-amber-700 to-yellow-800 shadow-amber-800/15';
+      case 'flying': return 'bg-gradient-to-br from-sky-400 via-indigo-400 to-violet-400 shadow-indigo-400/15';
+      case 'bug': return 'bg-gradient-to-br from-lime-600 via-lime-500 to-emerald-600 shadow-lime-600/15';
+      case 'rock': return 'bg-gradient-to-br from-stone-600 via-stone-500 to-stone-700 shadow-stone-600/15';
+      case 'ghost': return 'bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 shadow-indigo-950/15';
+      case 'dragon': return 'bg-gradient-to-br from-indigo-700 via-red-500 to-amber-500 shadow-indigo-600/15';
+      case 'steel': return 'bg-gradient-to-br from-slate-400 via-zinc-400 to-neutral-400 shadow-zinc-400/15';
+      case 'fairy': return 'bg-gradient-to-br from-pink-400 via-fuchsia-300 to-rose-400 shadow-pink-300/15';
+      case 'ice': return 'bg-gradient-to-br from-cyan-400 via-sky-300 to-blue-400 shadow-cyan-300/15';
+      default: return 'bg-gradient-to-br from-slate-600 via-slate-500 to-slate-700 shadow-slate-500/15';
+    }
+  }
+
+  getTypeBadgeClass(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'fire': return 'bg-red-500/20 text-red-300 border-red-500/35';
+      case 'water': return 'bg-blue-500/20 text-blue-300 border-blue-500/35';
+      case 'grass': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35';
+      case 'electric': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/35';
+      case 'psychic': return 'bg-purple-500/20 text-purple-300 border-purple-500/35';
+      case 'poison': return 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/35';
+      case 'ground': return 'bg-amber-700/20 text-amber-300 border-amber-700/35';
+      case 'flying': return 'bg-sky-500/20 text-sky-300 border-sky-500/35';
+      case 'bug': return 'bg-lime-500/20 text-lime-300 border-lime-500/35';
+      case 'rock': return 'bg-stone-500/20 text-stone-300 border-stone-500/35';
+      case 'ghost': return 'bg-indigo-950/40 text-indigo-300 border-indigo-800/35';
+      case 'dragon': return 'bg-violet-950/40 text-violet-300 border-violet-800/35';
+      case 'steel': return 'bg-slate-500/20 text-slate-300 border-slate-500/35';
+      case 'fairy': return 'bg-pink-500/20 text-pink-300 border-pink-500/35';
+      case 'ice': return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/35';
+      default: return 'bg-slate-500/20 text-slate-300 border-slate-500/35';
+    }
+  }
+
+  getRarityStars(rarity: string): string {
+    switch (rarity) {
+      case 'Common': return '⭐';
+      case 'Rare': return '⭐⭐';
+      case 'Legendary': return '⭐⭐⭐';
+      default: return '⭐';
     }
   }
 }
