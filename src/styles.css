@@ -29,3 +29,49 @@ body {
 .card-glow-rare {
   box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
 }
+
+/* Battle animations */
+@keyframes player-attack {
+  0% { transform: translateY(0) scale(1); z-index: 50; }
+  25% { transform: translateY(15px) scale(0.95); }
+  50% { transform: translateY(-70px) scale(1.1) rotate(-3deg); }
+  75% { transform: translateY(-70px) scale(1.1) rotate(-3deg); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.animate-player-attack {
+  animation: player-attack 0.8s ease-in-out forwards;
+}
+
+@keyframes cpu-attack {
+  0% { transform: translateY(0) scale(1); z-index: 50; }
+  25% { transform: translateY(-15px) scale(0.95); }
+  50% { transform: translateY(70px) scale(1.1) rotate(3deg); }
+  75% { transform: translateY(70px) scale(1.1) rotate(3deg); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.animate-cpu-attack {
+  animation: cpu-attack 0.8s ease-in-out forwards;
+}
+
+@keyframes card-damage {
+  0%, 100% { transform: translateX(0); filter: brightness(1) drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  15%, 45%, 75% { transform: translateX(-8px); filter: brightness(1.4) drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) sepia(0.3) saturate(1.5) hue-rotate(-20deg); }
+  30%, 60%, 90% { transform: translateX(8px); filter: brightness(1.4) drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) sepia(0.3) saturate(1.5) hue-rotate(-20deg); }
+}
+
+.animate-card-damage {
+  animation: card-damage 0.5s ease-in-out forwards;
+}
+
+@keyframes card-destroy {
+  0% { transform: scale(1) rotate(0deg); filter: brightness(1) grayscale(0); opacity: 1; }
+  30% { transform: scale(1.15) rotate(-5deg); filter: brightness(1.8) grayscale(0.2) drop-shadow(0 0 25px rgba(239, 68, 68, 0.9)); }
+  100% { transform: scale(0) rotate(15deg); filter: brightness(0.2) grayscale(1); opacity: 0; }
+}
+
+.animate-card-destroy {
+  animation: card-destroy 0.8s ease-in forwards;
+}
+

@@ -125,7 +125,8 @@ interface PlayerState {
                  [ngClass]="[
                    !opponentState().field[slotIdx] ? 'border border-dashed border-slate-800 bg-slate-900/10' : getCardFrameClass(opponentState().field[slotIdx].type),
                    opponentState().field[slotIdx] && attackingCard() ? 'ring-4 ring-red-500/60 hover:scale-102 cursor-pointer shadow-md' : '',
-                   opponentState().field[slotIdx] && !attackingCard() ? 'shadow-md' : ''
+                   opponentState().field[slotIdx] && !attackingCard() ? 'shadow-md' : '',
+                   opponentState().field[slotIdx] ? getCardAnimationClass(myRole === 'p1' ? 'p2' : 'p1', slotIdx) : ''
                  ]">
               
               <!-- If card in slot -->
@@ -204,6 +205,8 @@ interface PlayerState {
                    [ngClass]="playerState().lp > 1000 ? 'text-teal-400' : 'text-rose-400 animate-pulse'">
                 {{ playerState().lp }}
               </div>
+            </div>
+          </div>
                      <!-- Player Cards on Field (5 Slots) -->
           <div class="grid grid-cols-5 gap-3 bg-slate-950/70 p-3 rounded-2xl border border-slate-850/60 min-h-[160px]">
             <div *ngFor="let slotIdx of [0,1,2,3,4]" 
@@ -212,7 +215,8 @@ interface PlayerState {
                  [ngClass]="[
                    !playerState().field[slotIdx] ? 'border border-dashed border-slate-800 bg-slate-900/10' : getCardFrameClass(playerState().field[slotIdx].type),
                    playerState().field[slotIdx] && isMyTurn() ? 'cursor-pointer hover:scale-102 shadow-md' : '',
-                   activeFieldSelection()?.slotIdx === slotIdx ? 'ring-4 ring-amber-400' : ''
+                   activeFieldSelection()?.slotIdx === slotIdx ? 'ring-4 ring-amber-400' : '',
+                   playerState().field[slotIdx] ? getCardAnimationClass(myRole, slotIdx) : ''
                  ]">
               
               <!-- If card in slot -->
@@ -416,6 +420,14 @@ export class GameComponent implements OnInit, OnDestroy {
   summonLimitLeft = 1;
   usedSkillsThisTurn: number[] = [];
   attackedCardsThisTurn: number[] = [];
+
+  // Animation tracking
+  animatingAttackerRole: 'p1' | 'p2' | null = null;
+  animatingAttackerSlot: number | null = null;
+  animatingDefenderRole: 'p1' | 'p2' | null = null;
+  animatingDefenderSlot: number | null = null;
+  animatingDestroyedRole: 'p1' | 'p2' | null = null;
+  animatingDestroyedSlot: number | null = null;
 
   constructor() {}
 
@@ -627,12 +639,23 @@ export class GameComponent implements OnInit, OnDestroy {
   runCpuCardAttack(cpuCard: Card) {
     const player = this.gameState.p1;
     const cpu = this.gameState.p2;
+    const cpuIdx = cpu.field.findIndex(c => c.id === cpuCard.id);
+
+    if (cpuIdx === -1) return;
 
     // Direct attack if Player's field is empty
     if (player.field.length === 0) {
-      player.lp -= cpuCard.attack;
-      this.logMessage.set(`¡${cpuCard.name} de la CPU te atacó directamente por ${cpuCard.attack} LP!`);
-      this.checkGameEnded();
+      this.animatingAttackerRole = 'p2';
+      this.animatingAttackerSlot = cpuIdx;
+      this.logMessage.set(`¡${cpuCard.name} de la CPU declara un ataque directo!`);
+
+      setTimeout(() => {
+        this.animatingAttackerRole = null;
+        this.animatingAttackerSlot = null;
+        player.lp -= cpuCard.attack;
+        this.logMessage.set(`¡${cpuCard.name} de la CPU te atacó directamente por ${cpuCard.attack} LP!`);
+        this.checkGameEnded();
+      }, 800);
       return;
     }
 
@@ -657,35 +680,58 @@ export class GameComponent implements OnInit, OnDestroy {
     const targetCard = player.field[bestTargetIdx];
     this.logMessage.set(`¡${cpuCard.name} de la CPU ataca a tu ${targetCard.name}!`);
 
+    // 1. Iniciar animación de ataque
+    this.animatingAttackerRole = 'p2';
+    this.animatingAttackerSlot = cpuIdx;
+
+    // 2. Al impactar (400ms), animar daño en el defensor
     setTimeout(() => {
+      this.animatingDefenderRole = 'p1';
+      this.animatingDefenderSlot = bestTargetIdx;
+    }, 400);
+
+    // 3. Resolver combate tras la animación (800ms)
+    setTimeout(() => {
+      this.animatingAttackerRole = null;
+      this.animatingAttackerSlot = null;
+      this.animatingDefenderRole = null;
+      this.animatingDefenderSlot = null;
+
+      let isDestroyed = false;
+      let diff = 0;
+
       if (targetCard.position === 'attack') {
         if (cpuCard.attack > targetCard.attack) {
-          // Destroy player card
-          const diff = cpuCard.attack - targetCard.attack;
+          diff = cpuCard.attack - targetCard.attack;
           player.lp -= diff;
-          player.discarded.push(targetCard);
-          player.field.splice(bestTargetIdx, 1);
-          this.logMessage.set(`¡Tu ${targetCard.name} fue destruido! Recibes ${diff} LP de daño.`);
+          isDestroyed = true;
         } else if (cpuCard.attack < targetCard.attack) {
           // No damage, no destruction
           this.logMessage.set(`El ataque de ${cpuCard.name} contra tu ${targetCard.name} fue resistido.`);
         } else {
           // Both destroyed
+          isDestroyed = true;
+          cpu.discarded.push(cpuCard);
+          if (cpuIdx !== -1) {
+            this.animatingDestroyedRole = 'p2';
+            this.animatingDestroyedSlot = cpuIdx;
+            setTimeout(() => {
+              cpu.field.splice(cpuIdx, 1);
+              this.animatingDestroyedRole = null;
+              this.animatingDestroyedSlot = null;
+            }, 800);
+          }
+          
           player.discarded.push(targetCard);
           player.field.splice(bestTargetIdx, 1);
-          const cpuIdx = cpu.field.findIndex(c => c.id === cpuCard.id);
-          cpu.discarded.push(cpuCard);
-          if (cpuIdx !== -1) cpu.field.splice(cpuIdx, 1);
           this.logMessage.set(`¡Ambos Pokémon lucharon con la misma fuerza y fueron destruidos!`);
         }
       } else {
         // Defense mode
         if (cpuCard.attack > targetCard.defense) {
-          const diff = cpuCard.attack - targetCard.defense;
+          diff = cpuCard.attack - targetCard.defense;
           player.lp -= diff;
-          player.discarded.push(targetCard);
-          player.field.splice(bestTargetIdx, 1);
-          this.logMessage.set(`¡Tu ${targetCard.name} en Modo de Defensa fue destruido! Pierdes ${diff} LP por penetración.`);
+          isDestroyed = true;
         } else if (cpuCard.attack < targetCard.defense) {
           this.logMessage.set(`La defensa de tu ${targetCard.name} resistió el ataque. El ataque de la CPU rebota sin daño.`);
         } else {
@@ -693,8 +739,34 @@ export class GameComponent implements OnInit, OnDestroy {
         }
       }
 
-      this.checkGameEnded();
-    }, 1000);
+      if (isDestroyed && targetCard.position === 'attack') {
+        this.animatingDestroyedRole = 'p1';
+        this.animatingDestroyedSlot = bestTargetIdx;
+        this.logMessage.set(`¡Tu ${targetCard.name} fue destruido! Recibes ${diff} LP de daño.`);
+        
+        setTimeout(() => {
+          player.discarded.push(targetCard);
+          player.field.splice(bestTargetIdx, 1);
+          this.animatingDestroyedRole = null;
+          this.animatingDestroyedSlot = null;
+          this.checkGameEnded();
+        }, 800);
+      } else if (isDestroyed && targetCard.position === 'defense') {
+        this.animatingDestroyedRole = 'p1';
+        this.animatingDestroyedSlot = bestTargetIdx;
+        this.logMessage.set(`¡Tu ${targetCard.name} en Modo de Defensa fue destruido! Pierdes ${diff} LP por penetración.`);
+        
+        setTimeout(() => {
+          player.discarded.push(targetCard);
+          player.field.splice(bestTargetIdx, 1);
+          this.animatingDestroyedRole = null;
+          this.animatingDestroyedSlot = null;
+          this.checkGameEnded();
+        }, 800);
+      } else {
+        this.checkGameEnded();
+      }
+    }, 800);
   }
 
   // --- CORE GAME STATE TRANSACTIONS ---
@@ -873,27 +945,61 @@ export class GameComponent implements OnInit, OnDestroy {
   executeAttack(attacker: Card, defender: Card, targetSlotIdx: number) {
     if (!this.isMyTurn() || this.gameState.phase !== 'attack') return;
 
-    this.logMessage.set(`¡${attacker.name} ataca a ${defender.name}!`);
     const me = this.playerState();
     const opponent = this.opponentState();
+    const attackerSlotIdx = me.field.findIndex(c => c.id === attacker.id);
 
+    if (attackerSlotIdx === -1) return;
+
+    this.logMessage.set(`¡${attacker.name} declara un ataque contra ${defender.name}!`);
+
+    const attackerRole = this.myRole;
+    const defenderRole = this.myRole === 'p1' ? 'p2' : 'p1';
+
+    // 1. Iniciar animación de ataque
+    this.animatingAttackerRole = attackerRole;
+    this.animatingAttackerSlot = attackerSlotIdx;
+
+    // 2. Al impactar (400ms), animar daño en el defensor
     setTimeout(() => {
+      this.animatingDefenderRole = defenderRole;
+      this.animatingDefenderSlot = targetSlotIdx;
+    }, 400);
+
+    // 3. Resolver combate tras la animación de ataque (800ms)
+    setTimeout(() => {
+      this.animatingAttackerRole = null;
+      this.animatingAttackerSlot = null;
+      this.animatingDefenderRole = null;
+      this.animatingDefenderSlot = null;
+
+      let isDestroyed = false;
+      let diff = 0;
+
       if (defender.position === 'attack') {
         if (attacker.attack > defender.attack) {
-          const diff = attacker.attack - defender.attack;
+          diff = attacker.attack - defender.attack;
           opponent.lp -= diff;
-          // remove defender
-          opponent.discarded.push(defender);
-          opponent.field.splice(targetSlotIdx, 1);
-          this.logMessage.set(`¡${defender.name} fue destruido! Oponente pierde ${diff} LP.`);
+          isDestroyed = true;
         } else if (attacker.attack < defender.attack) {
           // No damage, no destruction
           this.logMessage.set(`El ataque de tu ${attacker.name} fue resistido por ${defender.name}.`);
         } else {
           // both destroyed
+          isDestroyed = true;
           const attIdx = me.field.findIndex(c => c.id === attacker.id);
           me.discarded.push(attacker);
-          if (attIdx !== -1) me.field.splice(attIdx, 1);
+          if (attIdx !== -1) {
+            this.animatingDestroyedRole = attackerRole;
+            this.animatingDestroyedSlot = attIdx;
+            setTimeout(() => {
+              me.field.splice(attIdx, 1);
+              this.animatingDestroyedRole = null;
+              this.animatingDestroyedSlot = null;
+              if (this.isOnlineMode) this.syncOnlineState();
+            }, 800);
+          }
+          
           opponent.discarded.push(defender);
           opponent.field.splice(targetSlotIdx, 1);
           this.logMessage.set(`¡Ambos monstruos se destruyeron mutuamente!`);
@@ -901,11 +1007,9 @@ export class GameComponent implements OnInit, OnDestroy {
       } else {
         // Defense mode
         if (attacker.attack > defender.defense) {
-          const diff = attacker.attack - defender.defense;
+          diff = attacker.attack - defender.defense;
           opponent.lp -= diff;
-          opponent.discarded.push(defender);
-          opponent.field.splice(targetSlotIdx, 1);
-          this.logMessage.set(`¡El escudo de ${defender.name} se rompió! Es enviado al cementerio y oponente pierde ${diff} LP por penetración.`);
+          isDestroyed = true;
         } else if (attacker.attack < defender.defense) {
           this.logMessage.set(`La defensa de ${defender.name} resistió el ataque. Tu ataque rebota sin daño.`);
         } else {
@@ -913,6 +1017,65 @@ export class GameComponent implements OnInit, OnDestroy {
         }
       }
 
+      if (isDestroyed && defender.position === 'attack') {
+        this.animatingDestroyedRole = defenderRole;
+        this.animatingDestroyedSlot = targetSlotIdx;
+        this.logMessage.set(`¡${defender.name} fue destruido! Oponente pierde ${diff} LP.`);
+        
+        setTimeout(() => {
+          opponent.discarded.push(defender);
+          opponent.field.splice(targetSlotIdx, 1);
+          this.animatingDestroyedRole = null;
+          this.animatingDestroyedSlot = null;
+          this.checkGameEnded();
+          if (this.isOnlineMode) this.syncOnlineState();
+        }, 800);
+      } else if (isDestroyed && defender.position === 'defense') {
+        this.animatingDestroyedRole = defenderRole;
+        this.animatingDestroyedSlot = targetSlotIdx;
+        this.logMessage.set(`¡El escudo de ${defender.name} se rompió! Es enviado al cementerio y oponente pierde ${diff} LP por penetración.`);
+        
+        setTimeout(() => {
+          opponent.discarded.push(defender);
+          opponent.field.splice(targetSlotIdx, 1);
+          this.animatingDestroyedRole = null;
+          this.animatingDestroyedSlot = null;
+          this.checkGameEnded();
+          if (this.isOnlineMode) this.syncOnlineState();
+        }, 800);
+      } else {
+        this.checkGameEnded();
+        if (this.isOnlineMode) this.syncOnlineState();
+      }
+
+      this.attackedCardsThisTurn.push(attacker.id);
+      this.clearSelection();
+    }, 800);
+  }
+
+  directAttackOpponent() {
+    const attacker = this.attackingCard();
+    if (!attacker || !this.isMyTurn() || this.gameState.phase !== 'attack') return;
+
+    const me = this.playerState();
+    const opponent = this.opponentState();
+    const attackerSlotIdx = me.field.findIndex(c => c.id === attacker.id);
+
+    if (attackerSlotIdx === -1) return;
+
+    this.logMessage.set(`¡${attacker.name} declara un ataque directo!`);
+
+    // Iniciar animación de ataque
+    this.animatingAttackerRole = this.myRole;
+    this.animatingAttackerSlot = attackerSlotIdx;
+
+    setTimeout(() => {
+      this.animatingAttackerRole = null;
+      this.animatingAttackerSlot = null;
+
+      opponent.lp -= attacker.attack;
+      this.logMessage.set(`¡${attacker.name} atacó directamente por ${attacker.attack} LP!`);
+      
       this.attackedCardsThisTurn.push(attacker.id);
       this.clearSelection();
       this.checkGameEnded();
@@ -920,24 +1083,7 @@ export class GameComponent implements OnInit, OnDestroy {
       if (this.isOnlineMode) {
         this.syncOnlineState();
       }
-    }, 1000);
-  }
-
-  directAttackOpponent() {
-    const attacker = this.attackingCard();
-    if (!attacker || !this.isMyTurn() || this.gameState.phase !== 'attack') return;
-
-    const opponent = this.opponentState();
-    opponent.lp -= attacker.attack;
-    this.logMessage.set(`¡${attacker.name} atacó directamente por ${attacker.attack} LP!`);
-    
-    this.attackedCardsThisTurn.push(attacker.id);
-    this.clearSelection();
-    this.checkGameEnded();
-
-    if (this.isOnlineMode) {
-      this.syncOnlineState();
-    }
+    }, 800);
   }
 
   endPhase() {
@@ -1230,5 +1376,24 @@ export class GameComponent implements OnInit, OnDestroy {
       case 'Legendary': return '⭐⭐⭐';
       default: return '⭐';
     }
+  }
+
+  getCardAnimationClass(role: 'p1' | 'p2', slotIdx: number): string {
+    // Attack animations
+    if (this.animatingAttackerRole === role && this.animatingAttackerSlot === slotIdx) {
+      return role === this.myRole ? 'animate-player-attack' : 'animate-cpu-attack';
+    }
+
+    // Damage animations
+    if (this.animatingDefenderRole === role && this.animatingDefenderSlot === slotIdx) {
+      return 'animate-card-damage';
+    }
+
+    // Destruction animations
+    if (this.animatingDestroyedRole === role && this.animatingDestroyedSlot === slotIdx) {
+      return 'animate-card-destroy';
+    }
+
+    return '';
   }
 }
