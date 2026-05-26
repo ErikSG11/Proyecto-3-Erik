@@ -686,15 +686,13 @@ export class GameComponent implements OnInit, OnDestroy {
       } else {
         // Defense mode
         if (cpuCard.attack > targetCard.defense) {
-          // Destroy player card, no LP damage
+          const diff = cpuCard.attack - targetCard.defense;
+          player.lp -= diff;
           player.discarded.push(targetCard);
           player.field.splice(bestTargetIdx, 1);
-          this.logMessage.set(`Tu ${targetCard.name} en Modo de Defensa fue destruido por el ataque.`);
+          this.logMessage.set(`¡Tu ${targetCard.name} en Modo de Defensa fue destruido! Pierdes ${diff} LP por penetración.`);
         } else if (cpuCard.attack < targetCard.defense) {
-          // CPU loses LP, no card destroyed
-          const diff = targetCard.defense - cpuCard.attack;
-          cpu.lp -= diff;
-          this.logMessage.set(`La defensa de tu ${targetCard.name} resistió el ataque. CPU recibe ${diff} LP de daño.`);
+          this.logMessage.set(`La defensa de tu ${targetCard.name} resistió el ataque. El ataque de la CPU rebota sin daño.`);
         } else {
           this.logMessage.set(`El ataque rebotó en el escudo de tu ${targetCard.name}. Ninguno recibe daño.`);
         }
@@ -913,13 +911,13 @@ export class GameComponent implements OnInit, OnDestroy {
       } else {
         // Defense mode
         if (attacker.attack > defender.defense) {
+          const diff = attacker.attack - defender.defense;
+          opponent.lp -= diff;
           opponent.discarded.push(defender);
           opponent.field.splice(targetSlotIdx, 1);
-          this.logMessage.set(`¡El escudo de ${defender.name} se rompió y fue enviado al cementerio!`);
+          this.logMessage.set(`¡El escudo de ${defender.name} se rompió! Es enviado al cementerio y oponente pierde ${diff} LP por penetración.`);
         } else if (attacker.attack < defender.defense) {
-          const diff = defender.defense - attacker.attack;
-          me.lp -= diff;
-          this.logMessage.set(`La defensa de ${defender.name} resistió. Pierdes ${diff} LP.`);
+          this.logMessage.set(`La defensa de ${defender.name} resistió el ataque. Tu ataque rebota sin daño.`);
         } else {
           this.logMessage.set(`Ataque bloqueado. Ningún monstruo fue dañado.`);
         }
