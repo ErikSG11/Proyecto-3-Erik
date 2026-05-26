@@ -25,19 +25,19 @@ import { SqliteService } from '../services/sqlite.service';
 
         <form (ngSubmit)="saveSettings()" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <label for="supabaseUrlInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
               Supabase Project URL
             </label>
-            <input type="text" [(ngModel)]="supabaseUrl" name="supabaseUrl" required
+            <input type="text" id="supabaseUrlInput" [(ngModel)]="supabaseUrl" name="supabaseUrl" required
                    placeholder="https://your-project-id.supabase.co"
                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all font-mono">
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <label for="supabaseKeyInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
               Supabase Anon Key
             </label>
-            <textarea [(ngModel)]="supabaseKey" name="supabaseKey" required rows="4"
+            <textarea id="supabaseKeyInput" [(ngModel)]="supabaseKey" name="supabaseKey" required rows="4"
                       placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                       class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all font-mono"></textarea>
           </div>

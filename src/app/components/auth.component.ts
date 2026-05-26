@@ -23,24 +23,24 @@ import { SupabaseService } from '../services/supabase.service';
         <form (ngSubmit)="handleSubmit()" class="space-y-4">
           <!-- Username (Only for Sign Up) -->
           <div *ngIf="isSignUp()">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Nombre de Usuario</label>
-            <input type="text" [(ngModel)]="username" name="username" required
+            <label for="usernameInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Nombre de Usuario</label>
+            <input type="text" id="usernameInput" [(ngModel)]="username" name="username" required
                    placeholder="Ej: EntrenadorRojo"
                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all">
           </div>
 
           <!-- Email -->
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Correo Electrónico</label>
-            <input type="email" [(ngModel)]="email" name="email" required
+            <label for="emailInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Correo Electrónico</label>
+            <input type="email" id="emailInput" [(ngModel)]="email" name="email" required
                    placeholder="correo@ejemplo.com"
                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all">
           </div>
 
           <!-- Password -->
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Contraseña</label>
-            <input type="password" [(ngModel)]="password" name="password" required
+            <label for="passwordInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Contraseña</label>
+            <input type="password" id="passwordInput" [(ngModel)]="password" name="password" required
                    placeholder="Mínimo 6 caracteres"
                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all">
           </div>
