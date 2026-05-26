@@ -11,6 +11,8 @@ export class SupabaseService {
   private supabaseKey: string = '';
   
   currentUserProfile = signal<any>(null);
+  authInitialized = signal<boolean>(false);
+  private initPromise: Promise<boolean> | null = null;
 
   constructor(private sqliteService: SqliteService) {}
 
@@ -21,65 +23,75 @@ export class SupabaseService {
     if (this.supabase) {
       return true;
     }
-    try {
-      // Asegurar que SQLite esté completamente inicializado antes de consultar
-      await this.sqliteService.initialize();
-
-      console.log('SupabaseService: Leyendo credenciales de SQLite...');
-      const urlSetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_url'");
-      const keySetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_key'");
-
-      const url = urlSetting.length > 0 ? urlSetting[0].value : '';
-      const key = keySetting.length > 0 ? keySetting[0].value : '';
-
-      if (url && key) {
-        this.supabaseUrl = url;
-        this.supabaseKey = key;
-        console.log('SupabaseService: Inicializando cliente con URL:', url);
-        this.supabase = createClient(url, key, {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true
-          }
-        });
-        
-        // Listen to Auth State Changes to update profile reactive signal
-        this.supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('SupabaseService: onAuthStateChange event:', event, 'session:', session?.user?.id);
-          if (session?.user) {
-            try {
-              console.log('SupabaseService: Cargando perfil para usuario:', session.user.id);
-              let profile = null;
-              try {
-                profile = await this.getUserProfile(session.user.id);
-              } catch (e) {
-                console.log('SupabaseService: Perfil no encontrado en base de datos. Creando perfil con metadatos...');
-                const username = session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador';
-                profile = await this.createProfile(session.user.id, username);
-              }
-              console.log('SupabaseService: Perfil cargado con éxito:', profile);
-              this.currentUserProfile.set(profile);
-            } catch (e) {
-              console.warn('SupabaseService: Error al cargar o crear perfil, usando fallback:', e);
-              this.currentUserProfile.set({
-                id: session.user.id,
-                username: session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador'
-              });
-            }
-          } else {
-            console.log('SupabaseService: No hay sesión activa. Limpiando perfil.');
-            this.currentUserProfile.set(null);
-          }
-        });
-
-        console.log('Supabase client successfully initialized with saved settings');
-        return true;
-      }
-    } catch (e) {
-      console.error('Error reading Supabase settings from SQLite:', e);
+    if (this.initPromise) {
+      return this.initPromise;
     }
-    console.warn('Supabase credentials not configured. Online mode will be unavailable.');
-    return false;
+
+    this.initPromise = (async () => {
+      try {
+        // Asegurar que SQLite esté completamente inicializado antes de consultar
+        await this.sqliteService.initialize();
+
+        console.log('SupabaseService: Leyendo credenciales de SQLite...');
+        const urlSetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_url'");
+        const keySetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_key'");
+
+        const url = urlSetting.length > 0 ? urlSetting[0].value : '';
+        const key = keySetting.length > 0 ? keySetting[0].value : '';
+
+        if (url && key) {
+          this.supabaseUrl = url;
+          this.supabaseKey = key;
+          console.log('SupabaseService: Inicializando cliente con URL:', url);
+          this.supabase = createClient(url, key, {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true
+            }
+          });
+          
+          // Listen to Auth State Changes to update profile reactive signal
+          this.supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('SupabaseService: onAuthStateChange event:', event, 'session:', session?.user?.id);
+            if (session?.user) {
+              try {
+                console.log('SupabaseService: Cargando perfil para usuario:', session.user.id);
+                let profile = null;
+                try {
+                  profile = await this.getUserProfile(session.user.id);
+                } catch (e) {
+                  console.log('SupabaseService: Perfil no encontrado en base de datos. Creando perfil con metadatos...');
+                  const username = session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador';
+                  profile = await this.createProfile(session.user.id, username);
+                }
+                console.log('SupabaseService: Perfil cargado con éxito:', profile);
+                this.currentUserProfile.set(profile);
+              } catch (e) {
+                console.warn('SupabaseService: Error al cargar o crear perfil, usando fallback:', e);
+                this.currentUserProfile.set({
+                  id: session.user.id,
+                  username: session.user.user_metadata?.['username'] || session.user.email?.split('@')[0] || 'Entrenador'
+                });
+              }
+            } else {
+              console.log('SupabaseService: No hay sesión activa. Limpiando perfil.');
+              this.currentUserProfile.set(null);
+            }
+            this.authInitialized.set(true);
+          });
+
+          console.log('Supabase client successfully initialized with saved settings');
+          return true;
+        }
+      } catch (e) {
+        console.error('Error reading Supabase settings from SQLite:', e);
+      }
+      console.warn('Supabase credentials not configured. Online mode will be unavailable.');
+      this.authInitialized.set(true);
+      return false;
+    })();
+
+    return this.initPromise;
   }
 
   /**
@@ -105,6 +117,7 @@ export class SupabaseService {
           autoRefreshToken: true
         }
       });
+      this.initPromise = Promise.resolve(true);
 
       this.supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('SupabaseService (Updated): onAuthStateChange event:', event, 'session:', session?.user?.id);
@@ -132,6 +145,7 @@ export class SupabaseService {
           console.log('SupabaseService (Updated): No hay sesión activa.');
           this.currentUserProfile.set(null);
         }
+        this.authInitialized.set(true);
       });
 
       console.log('Supabase client reinitialized with new credentials');

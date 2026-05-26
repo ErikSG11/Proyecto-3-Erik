@@ -407,11 +407,9 @@ export class GameComponent implements OnInit, OnDestroy {
         return;
       }
       
-      // Esperar brevemente a que se resuelva la sesión reactiva
-      let retries = 5;
-      while (!this.currentUserProfile() && retries > 0) {
-        await new Promise(r => setTimeout(r, 200));
-        retries--;
+      // Esperar a que la autenticación de Supabase se haya inicializado por completo
+      while (!this.supabaseService.authInitialized()) {
+        await new Promise(r => setTimeout(r, 100));
       }
 
       const user = this.currentUserProfile();
