@@ -8,6 +8,7 @@ declare var initSqlJs: any;
 export class SqliteService {
   private db: any = null;
   private isInitialized = false;
+  private initPromise: Promise<void> | null = null;
   private readonly DB_NAME = 'PokemonCardGameDB';
   private readonly STORE_NAME = 'sqlite_store';
   private readonly DB_KEY = 'sqlite_db_file';
@@ -19,35 +20,41 @@ export class SqliteService {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
+    if (this.initPromise) return this.initPromise;
 
-    try {
-      console.log('Initializing SQLite WASM from global scope...');
-      
-      const initFunc = (window as any).initSqlJs || (typeof initSqlJs !== 'undefined' ? initSqlJs : null);
+    this.initPromise = (async () => {
+      try {
+        console.log('Initializing SQLite WASM from global scope...');
+        
+        const initFunc = (window as any).initSqlJs || (typeof initSqlJs !== 'undefined' ? initSqlJs : null);
 
-      if (!initFunc) {
-        throw new Error('initSqlJs no está disponible. Asegúrate de incluir node_modules/sql.js/dist/sql-wasm-browser.js en "scripts" dentro de angular.json.');
+        if (!initFunc) {
+          throw new Error('initSqlJs no está disponible. Asegúrate de incluir node_modules/sql.js/dist/sql-wasm-browser.js en "scripts" dentro de angular.json.');
+        }
+
+        const SQL = await initFunc({
+          locateFile: (file: string) => `/${file}`
+        });
+
+        const savedBytes = await this.loadFromIndexedDB();
+        if (savedBytes && savedBytes.length > 0) {
+          this.db = new SQL.Database(new Uint8Array(savedBytes));
+          console.log('SQLite DB loaded from IndexedDB');
+        } else {
+          this.db = new SQL.Database();
+          console.log('New SQLite DB created');
+        }
+
+        this.createTables();
+        this.isInitialized = true;
+      } catch (error) {
+        console.error('Failed to initialize SQLite WASM:', error);
+        this.initPromise = null; // Permite reintentar si falla
+        throw error;
       }
+    })();
 
-      const SQL = await initFunc({
-        locateFile: (file: string) => `/${file}`
-      });
-
-      const savedBytes = await this.loadFromIndexedDB();
-      if (savedBytes && savedBytes.length > 0) {
-        this.db = new SQL.Database(new Uint8Array(savedBytes));
-        console.log('SQLite DB loaded from IndexedDB');
-      } else {
-        this.db = new SQL.Database();
-        console.log('New SQLite DB created');
-      }
-
-      this.createTables();
-      this.isInitialized = true;
-    } catch (error) {
-      console.error('Failed to initialize SQLite WASM:', error);
-      throw error;
-    }
+    return this.initPromise;
   }
 
   /**

@@ -18,7 +18,13 @@ export class SupabaseService {
    * Initializes Supabase client from settings in SQLite database.
    */
   async initialize(): Promise<boolean> {
+    if (this.supabase) {
+      return true;
+    }
     try {
+      // Asegurar que SQLite esté completamente inicializado antes de consultar
+      await this.sqliteService.initialize();
+
       console.log('SupabaseService: Leyendo credenciales de SQLite...');
       const urlSetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_url'");
       const keySetting = this.sqliteService.select("SELECT value FROM local_settings WHERE key = 'supabase_key'");
