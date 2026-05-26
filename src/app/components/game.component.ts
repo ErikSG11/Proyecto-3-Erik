@@ -667,13 +667,8 @@ export class GameComponent implements OnInit, OnDestroy {
           player.field.splice(bestTargetIdx, 1);
           this.logMessage.set(`¡Tu ${targetCard.name} fue destruido! Recibes ${diff} LP de daño.`);
         } else if (cpuCard.attack < targetCard.attack) {
-          // Destroy CPU card
-          const diff = targetCard.attack - cpuCard.attack;
-          cpu.lp -= diff;
-          const cpuIdx = cpu.field.findIndex(c => c.id === cpuCard.id);
-          cpu.discarded.push(cpuCard);
-          if (cpuIdx !== -1) cpu.field.splice(cpuIdx, 1);
-          this.logMessage.set(`¡El contraataque de tu ${targetCard.name} destruyó a ${cpuCard.name}! CPU pierde ${diff} LP.`);
+          // No damage, no destruction
+          this.logMessage.set(`El ataque de ${cpuCard.name} contra tu ${targetCard.name} fue resistido.`);
         } else {
           // Both destroyed
           player.discarded.push(targetCard);
@@ -892,13 +887,8 @@ export class GameComponent implements OnInit, OnDestroy {
           opponent.field.splice(targetSlotIdx, 1);
           this.logMessage.set(`¡${defender.name} fue destruido! Oponente pierde ${diff} LP.`);
         } else if (attacker.attack < defender.attack) {
-          const diff = defender.attack - attacker.attack;
-          me.lp -= diff;
-          // remove attacker
-          const attIdx = me.field.findIndex(c => c.id === attacker.id);
-          me.discarded.push(attacker);
-          if (attIdx !== -1) me.field.splice(attIdx, 1);
-          this.logMessage.set(`¡El contraataque destruyó a tu ${attacker.name}! Pierdes ${diff} LP.`);
+          // No damage, no destruction
+          this.logMessage.set(`El ataque de tu ${attacker.name} fue resistido por ${defender.name}.`);
         } else {
           // both destroyed
           const attIdx = me.field.findIndex(c => c.id === attacker.id);
