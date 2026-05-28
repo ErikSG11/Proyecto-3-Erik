@@ -12,60 +12,76 @@ import { SqliteService } from '../services/sqlite.service';
   template: `
     <div class="max-w-xl mx-auto px-4 py-8">
       <div class="flex items-center gap-4 mb-8">
-        <a routerLink="/" class="text-slate-400 hover:text-slate-100 transition-colors">← Volver al Inicio</a>
+        <a routerLink="/" class="text-slate-500 hover:text-indigo-600 text-sm font-semibold transition-colors">← Volver al Inicio</a>
       </div>
 
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 class="text-3xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-2">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <h2 class="text-3xl font-extrabold font-display text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 mb-2">
           CONFIGURACIÓN
         </h2>
-        <p class="text-sm text-slate-400 mb-6">
+        <p class="text-sm text-slate-500 mb-6 font-medium">
           Vincula tu proyecto de Supabase para activar la base de datos remota, la autenticación y el modo de juego multijugador en línea.
         </p>
 
-        <form (ngSubmit)="saveSettings()" class="space-y-4">
-          <div>
-            <label for="supabaseUrlInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Supabase Project URL
-            </label>
-            <input type="text" id="supabaseUrlInput" [(ngModel)]="supabaseUrl" name="supabaseUrl" required
-                   placeholder="https://your-project-id.supabase.co"
-                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all font-mono">
-          </div>
-
-          <div>
-            <label for="supabaseKeyInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Supabase Anon Key
-            </label>
-            <textarea id="supabaseKeyInput" [(ngModel)]="supabaseKey" name="supabaseKey" required rows="4"
-                      placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                      class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-teal-500 transition-all font-mono"></textarea>
-          </div>
-
-          <div *ngIf="successMessage()" class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm font-medium">
-            {{ successMessage() }}
-          </div>
-
-          <div *ngIf="errorMessage()" class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm font-medium">
-            {{ errorMessage() }}
-          </div>
-
-          <button type="submit" [disabled]="isSaving()"
-                  class="w-full py-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-teal-600/20 active:scale-98 transition-all duration-200 disabled:opacity-50">
-            {{ isSaving() ? 'Guardando...' : 'GUARDAR Y CONECTAR' }}
+        <!-- SETTINGS SECTIONS TABS -->
+        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200/60 mb-6">
+          <button type="button" (click)="activeSettingsTab.set('credentials')"
+                  [class]="activeSettingsTab() === 'credentials' ? 'bg-white text-indigo-600 shadow-sm font-bold' : 'text-slate-550 hover:text-slate-700'"
+                  class="flex-1 py-2 text-xs uppercase tracking-wider rounded-lg transition-all">
+            Credenciales
           </button>
-        </form>
+          <button type="button" (click)="activeSettingsTab.set('sql')"
+                  [class]="activeSettingsTab() === 'sql' ? 'bg-white text-indigo-600 shadow-sm font-bold' : 'text-slate-550 hover:text-slate-700'"
+                  class="flex-1 py-2 text-xs uppercase tracking-wider rounded-lg transition-all">
+            Tablas SQL
+          </button>
+        </div>
 
-        <div class="mt-8 border-t border-slate-800 pt-6">
-          <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">Instrucciones de Configuración</h3>
-          <ol class="list-decimal list-inside text-xs text-slate-400 space-y-2">
-            <li>Regístrate o inicia sesión en <a href="https://supabase.com" target="_blank" class="text-teal-400 hover:underline">supabase.com</a>.</li>
+        <div *ngIf="activeSettingsTab() === 'credentials'">
+          <form (ngSubmit)="saveSettings()" class="space-y-4">
+            <div>
+              <label for="supabaseUrlInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                Supabase Project URL
+              </label>
+              <input type="text" id="supabaseUrlInput" [(ngModel)]="supabaseUrl" name="supabaseUrl" required
+                     placeholder="https://your-project-id.supabase.co"
+                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-mono">
+            </div>
+
+            <div>
+              <label for="supabaseKeyInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                Supabase Anon Key
+              </label>
+              <textarea id="supabaseKeyInput" [(ngModel)]="supabaseKey" name="supabaseKey" required rows="4"
+                        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-mono"></textarea>
+            </div>
+
+            <div *ngIf="successMessage()" class="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl text-sm font-medium">
+              {{ successMessage() }}
+            </div>
+
+            <div *ngIf="errorMessage()" class="p-3 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl text-sm font-medium">
+              {{ errorMessage() }}
+            </div>
+
+            <button type="submit" [disabled]="isSaving()"
+                    class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-sm hover:shadow-indigo-500/10 active:scale-98 transition-all duration-200 disabled:opacity-50">
+              {{ isSaving() ? 'Guardando...' : 'GUARDAR Y CONECTAR' }}
+            </button>
+          </form>
+        </div>
+
+        <div *ngIf="activeSettingsTab() === 'sql'" class="space-y-4 animate-fade-in">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700">Instrucciones de Configuración</h3>
+          <ol class="list-decimal list-inside text-xs text-slate-500 space-y-3 leading-relaxed">
+            <li>Regístrate o inicia sesión en <a href="https://supabase.com" target="_blank" class="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">supabase.com</a>.</li>
             <li>Crea un nuevo proyecto en Supabase (tarda ~1 minuto).</li>
             <li>Copia la <strong>Project URL</strong> y la <strong>API Anon Key</strong> desde tu Dashboard (Settings -> API).</li>
-            <li>Pega las credenciales arriba y haz clic en Guardar.</li>
+            <li>Pega las credenciales en la pestaña de Credenciales y haz clic en Guardar.</li>
             <li>
               Crea las tablas requeridas ejecutando el siguiente SQL en el <strong>SQL Editor</strong> de Supabase:
-              <pre class="bg-slate-950 p-3 rounded-lg mt-2 overflow-x-auto text-[10px] leading-relaxed text-slate-300 font-mono">
+              <pre class="bg-slate-50 border border-slate-150 p-3 rounded-lg mt-2 overflow-x-auto text-[10px] leading-relaxed text-slate-600 font-mono">
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
@@ -101,6 +117,7 @@ CREATE TABLE game_rooms (
   `
 })
 export class SettingsComponent implements OnInit {
+  activeSettingsTab = signal<'credentials' | 'sql'>('credentials');
   supabaseUrl = '';
   supabaseKey = '';
   successMessage = signal('');

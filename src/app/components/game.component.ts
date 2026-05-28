@@ -35,342 +35,478 @@ interface PlayerState {
     <div class="max-w-7xl mx-auto px-4 py-4 min-h-[92vh] flex flex-col justify-between">
       
       <!-- 1. MATCHMAKING SCREEN (Only shown in online mode when not playing) -->
-      <div *ngIf="isOnlineMode && !isPlaying()" class="max-w-md mx-auto my-12 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 w-full">
-        <h2 class="text-3xl font-bold font-display text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500">
+      <div *ngIf="isOnlineMode && !isPlaying()" class="max-w-md mx-auto my-12 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6 w-full animate-fade-in">
+        <h2 class="text-3xl font-extrabold font-display text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 uppercase">
           MULTIJUGADOR
         </h2>
-        <p class="text-xs text-slate-400 text-center">Crea una sala de duelo o únete a una existente mediante código.</p>
+        <p class="text-xs text-slate-500 text-center font-medium">Crea una sala de duelo o únete a una existente mediante código.</p>
 
-        <div *ngIf="!currentUserProfile()" class="text-center py-4 bg-slate-950 rounded-2xl border border-slate-800">
-          <p class="text-sm text-slate-400">Debes iniciar sesión para jugar en línea.</p>
-          <a routerLink="/auth" class="text-teal-400 text-xs font-semibold hover:underline mt-2 inline-block">Iniciar Sesión / Registrarse →</a>
+        <div *ngIf="!currentUserProfile()" class="text-center py-4 bg-slate-50 rounded-2xl border border-slate-150">
+          <p class="text-sm text-slate-500 font-medium">Debes iniciar sesión para jugar en línea.</p>
+          <a routerLink="/auth" class="text-indigo-650 text-xs font-bold hover:underline mt-2 inline-block">Iniciar Sesión / Registrarse →</a>
         </div>
 
         <div *ngIf="currentUserProfile()" class="space-y-4">
           <!-- Create Room -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl">
-            <h3 class="font-bold text-slate-200 text-sm mb-2">Crear Nueva Sala</h3>
+          <div class="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
+            <h3 class="font-bold text-slate-700 text-sm mb-2">Crear Nueva Sala</h3>
             <button (click)="createOnlineRoom()" [disabled]="loadingOnline()"
-                    class="w-full py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white text-sm font-bold rounded-xl active:scale-98 transition-all">
+                    class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-indigo-500/10 active:scale-98 transition-all">
               {{ loadingOnline() ? 'Creando sala...' : 'CREAR SALA' }}
             </button>
           </div>
 
           <!-- Join Room -->
-          <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
-            <h3 class="font-bold text-slate-200 text-sm">Unirse a una Sala</h3>
+          <div class="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+            <h3 class="font-bold text-slate-700 text-sm">Unirse a una Sala</h3>
             <div class="flex gap-2">
               <input type="text" [(ngModel)]="roomCodeToJoin" placeholder="CÓDIGO" maxlength="6"
-                     class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-center text-slate-100 font-mono font-bold tracking-widest focus:outline-none focus:border-teal-500 uppercase">
+                     class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-center text-slate-800 font-mono font-bold tracking-widest focus:outline-none focus:border-indigo-500 uppercase">
               <button (click)="joinOnlineRoom()" [disabled]="loadingOnline() || !roomCodeToJoin"
-                      class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-xl border border-slate-700 transition-all">
+                      class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-sm font-bold rounded-xl border border-slate-200 shadow-sm transition-all">
                 UNIRSE
               </button>
             </div>
           </div>
 
           <!-- Waiting for Opponent -->
-          <div *ngIf="currentRoomCode()" class="p-4 bg-teal-500/10 border border-teal-500/20 text-center rounded-2xl space-y-2">
-            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Código de tu Sala</p>
-            <span class="text-3xl font-display font-black text-teal-400 tracking-widest block">{{ currentRoomCode() }}</span>
-            <p class="text-xxs text-slate-400">Comparte este código con tu amigo para que pueda unirse a la batalla.</p>
-            <div class="animate-pulse text-teal-400 text-xs mt-2">Esperando oponente...</div>
+          <div *ngIf="currentRoomCode()" class="p-4 bg-indigo-50 border border-indigo-100 text-center rounded-2xl space-y-2 animate-fade-in">
+            <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">Código de tu Sala</p>
+            <span class="text-3xl font-display font-black text-indigo-650 tracking-widest block">{{ currentRoomCode() }}</span>
+            <p class="text-[10px] text-slate-550 font-semibold">Comparte este código con tu amigo para que pueda unirse a la batalla.</p>
+            <div class="animate-pulse text-indigo-600 text-xs font-bold mt-2">Esperando oponente...</div>
           </div>
         </div>
 
         <div class="text-center pt-2">
-          <a routerLink="/" class="text-xs text-slate-500 hover:text-slate-300">Volver al Menú Principal</a>
+          <a routerLink="/" class="text-xs text-slate-400 hover:text-slate-600 transition-colors">Volver al Menú Principal</a>
         </div>
       </div>
 
       <!-- 2. GAME ARENA (CPU Mode OR Active Online Mode) -->
       <div *ngIf="isPlaying()" class="flex-1 flex flex-col gap-4">
         
-        <!-- TOP: OPPONENT ROW -->
-        <div class="bg-slate-900/50 border border-slate-850/60 rounded-3xl p-4 flex flex-col gap-2 relative">
-          <!-- Opponent HUD -->
-          <div class="flex justify-between items-center px-2">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center border border-slate-800 text-xl shadow-md">
-                🤖
-              </div>
-              <div>
-                <h4 class="font-bold text-sm tracking-wide text-slate-200">{{ opponentState().username }}</h4>
-                <span class="text-[9px] px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded font-semibold text-rose-400 uppercase">Enemigo</span>
-              </div>
+        <!-- HUD Header Card -->
+        <div class="bg-white border border-slate-200/85 rounded-3xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <!-- Player HUD Left -->
+          <div class="flex items-center gap-3 flex-1">
+            <div class="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-xl shadow-xs shrink-0">
+              👤
             </div>
-            
-            <!-- Turn Indicator & Match Status -->
-            <div class="text-center">
-              <span *ngIf="isMyTurn()" class="px-3 py-1 bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xxs font-bold rounded-full animate-pulse uppercase tracking-wider">Tu Turno</span>
-              <span *ngIf="!isMyTurn()" class="px-3 py-1 bg-slate-850 text-slate-400 text-xxs font-bold rounded-full uppercase tracking-wider">Turno Rival</span>
-              <div class="text-[10px] text-slate-500 mt-1 font-mono uppercase">Fase: {{ gameState.phase }}</div>
-            </div>
-
-            <!-- Life Points -->
-            <div class="text-right">
-              <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider font-mono">LP Rival</span>
-              <div class="text-3xl font-black font-display tracking-wider" 
-                   [ngClass]="opponentState().lp > 1000 ? 'text-red-500' : 'text-red-400 animate-pulse'">
-                {{ opponentState().lp }}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h4 class="font-extrabold text-sm text-slate-800 truncate">{{ playerState().username }}</h4>
+                <span class="text-[8px] font-black px-1.5 py-0.2 bg-indigo-50 border border-indigo-200/60 rounded text-indigo-600 uppercase tracking-wider text-xxs">Tú</span>
               </div>
-            </div>
-          </div>
-
-          <!-- Opponent Cards on Field (5 Slots) -->
-          <div class="grid grid-cols-5 gap-3 bg-slate-950/70 p-3 rounded-2xl border border-slate-850/60 min-h-[160px] relative">
-            <div *ngFor="let slotIdx of [0,1,2,3,4]" 
-                 (click)="selectOpponentFieldCard(slotIdx)"
-                 class="rounded-xl flex flex-col items-center justify-center p-0.5 relative overflow-hidden transition-all duration-200"
-                 [ngClass]="[
-                   !opponentState().field[slotIdx] ? 'border border-dashed border-slate-800 bg-slate-900/10' : getCardFrameClass(opponentState().field[slotIdx].type),
-                   opponentState().field[slotIdx] && attackingCard() ? 'ring-4 ring-red-500/60 hover:scale-102 cursor-pointer shadow-md' : '',
-                   opponentState().field[slotIdx] && !attackingCard() ? 'shadow-md' : '',
-                   opponentState().field[slotIdx] ? getCardAnimationClass(myRole === 'p1' ? 'p2' : 'p1', slotIdx) : ''
-                 ]">
-              
-              <!-- If card in slot -->
-              <ng-container *ngIf="opponentState().field[slotIdx] as card">
-                <div class="relative w-full h-full rounded-[10px] bg-slate-950/95 p-1.5 flex flex-col justify-between items-center text-center overflow-hidden">
-                  <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
-                  
-                  <!-- Header: Name & Type Icon -->
-                  <div class="w-full flex justify-between items-center px-0.5 z-10">
-                    <span class="text-[7px] font-black text-slate-300 truncate max-w-[45px] uppercase">{{ card.name }}</span>
-                    <span class="text-[7px] font-bold text-amber-400 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
-                  </div>
-
-                  <!-- Card image (turned sideways if in defense mode) -->
-                  <div class="h-16 flex items-center justify-center transition-transform duration-300 z-10"
-                       [class.rotate-90]="card.position === 'defense'">
-                    <img [src]="card.image" class="h-12 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                  </div>
-
-                  <!-- Footer Stats & Mode Badge -->
-                  <div class="w-full flex justify-between items-center px-0.5 z-10 border-t border-slate-900/60 pt-1 mt-0.5">
-                    <span class="text-[7px] font-bold px-1 py-0.2 rounded font-mono"
-                          [ngClass]="card.position === 'attack' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
-                      {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
-                    </span>
-                    <div class="flex gap-1 text-[7px] font-mono font-bold text-slate-400">
-                      <span *ngIf="card.position === 'attack'" class="text-red-400">A:{{ card.attack }}</span>
-                      <span *ngIf="card.position === 'defense'" class="text-blue-400">D:{{ card.defense }}</span>
-                    </div>
+              <div class="flex items-center gap-2 mt-1">
+                <div class="flex-1 h-2 bg-slate-100 border border-slate-200/80 rounded-full overflow-hidden shadow-inner max-w-[150px]">
+                  <div class="h-full transition-all duration-500"
+                       [style.width.%]="(playerState().lp / 4000) * 100"
+                       [ngClass]="{
+                         'bg-indigo-600': playerState().lp > 1500,
+                         'bg-amber-500': playerState().lp <= 1500 && playerState().lp > 800,
+                         'bg-rose-600': playerState().lp <= 800
+                       }">
                   </div>
                 </div>
-              </ng-container>
-
-              <!-- Empty slot label -->
-              <span *ngIf="!opponentState().field[slotIdx]" class="text-[9px] font-mono font-bold text-slate-600 uppercase tracking-widest">Libre</span>
-            </div>
-            
-            <!-- Direct Attack Indicator Overlay -->
-            <div *ngIf="attackingCard() && opponentState().field.length === 0" 
-                 (click)="directAttackOpponent()"
-                 class="absolute inset-0 bg-red-500/10 border-2 border-red-500/50 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-red-500/20 transition-all">
-              <span class="text-sm font-bold text-red-400 font-display animate-pulse tracking-wider">⚔️ ¡HACER ATAQUE DIRECTO!</span>
+                <span class="text-xs font-black font-mono text-indigo-650 shrink-0">{{ playerState().lp }} LP</span>
+              </div>
             </div>
           </div>
 
-          <!-- Opponent Hand Size & Deck/Graveyard Indicator -->
-          <div class="flex justify-between items-center text-[10px] px-2 text-slate-400 font-mono">
-            <div>Mano: {{ opponentState().hand.length }} cartas</div>
-            <div>Mazo: {{ opponentState().deck.length }} | Cementerio: {{ opponentState().discarded.length }}</div>
+          <!-- Center Phase Tracker & Turn Banner -->
+          <div class="flex flex-col items-center gap-2 shrink-0">
+            <div class="flex items-center gap-2">
+              <span *ngIf="isMyTurn()" class="px-3 py-0.5 bg-indigo-50 border border-indigo-150 text-indigo-600 text-[9px] font-extrabold rounded-full animate-pulse uppercase tracking-wider">Tu Turno</span>
+              <span *ngIf="!isMyTurn()" class="px-3 py-0.5 bg-slate-100 border border-slate-200 text-slate-500 text-[9px] font-extrabold rounded-full uppercase tracking-wider">Turno Rival</span>
+            </div>
+            <!-- Stepper -->
+            <div class="flex items-center justify-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200/60">
+              <span [class]="gameState.phase === 'draw' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'text-slate-400 font-semibold'"
+                    class="text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-lg transition-all">Robo</span>
+              <span class="text-slate-300 text-[8px] font-bold">➔</span>
+              <span [class]="gameState.phase === 'main' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'text-slate-400 font-semibold'"
+                    class="text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-lg transition-all">Principal</span>
+              <span class="text-slate-300 text-[8px] font-bold">➔</span>
+              <span [class]="gameState.phase === 'attack' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'text-slate-400 font-semibold'"
+                    class="text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-lg transition-all">Ataque</span>
+              <span class="text-slate-300 text-[8px] font-bold">➔</span>
+              <span [class]="gameState.phase === 'end' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'text-slate-400 font-semibold'"
+                    class="text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-lg transition-all">Fin</span>
+            </div>
+          </div>
+
+          <!-- Opponent HUD Right -->
+          <div class="flex items-center gap-3 flex-1 justify-end md:text-right">
+            <div class="flex-1 min-w-0 md:max-w-[200px]">
+              <div class="flex items-center gap-2 justify-end">
+                <span class="text-[8px] font-black px-1.5 py-0.2 bg-rose-50 border border-rose-200/60 rounded text-rose-600 uppercase tracking-wider text-xxs">Rival</span>
+                <h4 class="font-extrabold text-sm text-slate-800 truncate">{{ opponentState().username }}</h4>
+              </div>
+              <div class="flex items-center gap-2 justify-end mt-1">
+                <span class="text-xs font-black font-mono text-rose-650 shrink-0">{{ opponentState().lp }} LP</span>
+                <div class="flex-1 h-2 bg-slate-100 border border-slate-200/80 rounded-full overflow-hidden shadow-inner max-w-[150px]">
+                  <div class="h-full transition-all duration-500"
+                       [style.width.%]="(opponentState().lp / 4000) * 100"
+                       [ngClass]="{
+                         'bg-rose-500': opponentState().lp > 1500,
+                         'bg-amber-500 animate-pulse': opponentState().lp <= 1500 && opponentState().lp > 800,
+                         'bg-rose-600 animate-pulse': opponentState().lp <= 800
+                       }">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-xl shadow-xs shrink-0 order-first md:order-last">
+              🤖
+            </div>
           </div>
         </div>
 
-        <!-- MIDDLE: SYSTEM LOGS / BANNER -->
-        <div class="bg-slate-950 p-2.5 border border-slate-850 rounded-2xl text-center text-xs font-mono text-slate-300">
-          🎮 <span class="text-teal-400 font-bold">Estado:</span> {{ logMessage() }}
-        </div>
-
-        <!-- BOTTOM: PLAYER ROW -->
-        <div class="bg-slate-900/50 border border-slate-850/60 rounded-3xl p-4 flex flex-col gap-2 relative">
-          <!-- Player HUD -->
-          <div class="flex justify-between items-center px-2">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center border border-slate-800 text-xl shadow-md">
-                👤
-              </div>
-              <div>
-                <h4 class="font-bold text-sm tracking-wide text-slate-200">{{ playerState().username }}</h4>
-                <span class="text-[9px] px-1.5 py-0.5 bg-teal-500/10 border border-teal-500/20 rounded font-semibold text-teal-400 uppercase">Tú</span>
-              </div>
-            </div>
-
-            <!-- Life Points -->
-            <div class="text-right">
-              <span class="text-slate-500 text-[10px] uppercase font-bold tracking-wider font-mono">Tus LP</span>
-              <div class="text-3xl font-black font-display tracking-wider" 
-                   [ngClass]="playerState().lp > 1000 ? 'text-teal-400' : 'text-rose-400 animate-pulse'">
-                {{ playerState().lp }}
-              </div>
-            </div>
-          </div>
-                     <!-- Player Cards on Field (5 Slots) -->
-          <div class="grid grid-cols-5 gap-3 bg-slate-950/70 p-3 rounded-2xl border border-slate-850/60 min-h-[160px]">
-            <div *ngFor="let slotIdx of [0,1,2,3,4]" 
-                 (click)="selectPlayerFieldCard(slotIdx)"
-                 class="rounded-xl flex flex-col items-center justify-center p-0.5 relative overflow-hidden transition-all duration-200"
-                 [ngClass]="[
-                   !playerState().field[slotIdx] ? 'border border-dashed border-slate-800 bg-slate-900/10' : getCardFrameClass(playerState().field[slotIdx].type),
-                   playerState().field[slotIdx] && isMyTurn() ? 'cursor-pointer hover:scale-102 shadow-md' : '',
-                   activeFieldSelection()?.slotIdx === slotIdx ? 'ring-4 ring-amber-400' : '',
-                   playerState().field[slotIdx] ? getCardAnimationClass(myRole, slotIdx) : ''
-                 ]">
+        <!-- MAIN ARENA GRID LAYOUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          <!-- LEFT: THE FIELD (10 columns on large screen) -->
+          <div class="lg:col-span-10 flex flex-col gap-4">
+            
+            <!-- OPPONENT FIELD ROW -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 flex flex-col gap-2 relative shadow-sm">
+              <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Campo del Rival</span>
               
-              <!-- If card in slot -->
-              <ng-container *ngIf="playerState().field[slotIdx] as card">
-                <div class="relative w-full h-full rounded-[10px] bg-slate-950/95 p-1.5 flex flex-col justify-between items-center text-center overflow-hidden">
-                  <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+              <div class="grid grid-cols-5 gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-200/60 min-h-[160px] relative">
+                <div *ngFor="let slotIdx of [0,1,2,3,4]" 
+                     (click)="selectOpponentFieldCard(slotIdx)"
+                     class="rounded-xl flex flex-col items-center justify-center p-0.5 relative overflow-hidden transition-all duration-200 min-h-[140px]"
+                     [ngClass]="[
+                       !opponentState().field[slotIdx] ? 'border border-dashed border-slate-200/80 bg-slate-100/30' : getCardFrameClass(opponentState().field[slotIdx].type),
+                       opponentState().field[slotIdx] && attackingCard() ? 'ring-4 ring-rose-500/60 hover:scale-102 cursor-pointer shadow-md' : '',
+                       opponentState().field[slotIdx] && !attackingCard() ? 'shadow-sm' : '',
+                       opponentState().field[slotIdx] ? getCardAnimationClass(myRole === 'p1' ? 'p2' : 'p1', slotIdx) : ''
+                     ]">
                   
-                  <!-- Header: Name & Type Icon -->
-                  <div class="w-full flex justify-between items-center px-0.5 z-10">
-                    <span class="text-[7px] font-black text-slate-300 truncate max-w-[45px] uppercase">{{ card.name }}</span>
-                    <span class="text-[7px] font-bold text-amber-400 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
-                  </div>
+                  <!-- If card in slot -->
+                  <ng-container *ngIf="opponentState().field[slotIdx] as card">
+                    <div class="relative w-full h-full rounded-[10px] bg-white p-1.5 flex flex-col justify-between items-center text-center overflow-hidden">
+                      <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+                      
+                      <!-- Header: Name & Type Icon -->
+                      <div class="w-full flex justify-between items-center px-0.5 z-10">
+                        <span class="text-[7.5px] font-extrabold text-slate-700 truncate max-w-[45px] uppercase leading-none">{{ card.name }}</span>
+                        <span class="text-[7px] font-bold text-amber-500 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
+                      </div>
 
-                  <!-- Card image (turned sideways if in defense mode) -->
-                  <div class="h-16 flex items-center justify-center transition-transform duration-300 z-10"
-                       [class.rotate-90]="card.position === 'defense'">
-                    <img [src]="card.image" class="h-12 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                  </div>
+                      <!-- Card image (turned sideways if in defense mode) -->
+                      <div class="h-16 flex items-center justify-center transition-transform duration-355 z-10"
+                           [class.rotate-90]="card.position === 'defense'">
+                        <img [src]="card.image" class="h-12 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+                      </div>
 
-                  <!-- Footer Stats & Mode Badge -->
-                  <div class="w-full flex justify-between items-center px-0.5 z-10 border-t border-slate-900/60 pt-1 mt-0.5">
-                    <span class="text-[7px] font-bold px-1 py-0.2 rounded font-mono"
-                          [ngClass]="card.position === 'attack' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
-                      {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
-                    </span>
-                    <div class="flex gap-1 text-[7px] font-mono font-bold text-slate-400">
-                      <span *ngIf="card.position === 'attack'" class="text-red-400">A:{{ card.attack }}</span>
-                      <span *ngIf="card.position === 'defense'" class="text-blue-400">D:{{ card.defense }}</span>
+                      <!-- Footer Stats & Mode Badge -->
+                      <div class="w-full flex justify-between items-center px-0.5 z-10 border-t border-slate-100 pt-1 mt-0.5">
+                        <span class="text-[7px] font-bold px-1 py-0.2 rounded font-mono"
+                              [ngClass]="card.position === 'attack' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-blue-50 text-blue-600 border border-blue-100'">
+                          {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
+                        </span>
+                        <div class="flex gap-1 text-[7px] font-mono font-bold text-slate-400">
+                          <span *ngIf="card.position === 'attack'" class="text-rose-600 font-extrabold">A:{{ card.attack }}</span>
+                          <span *ngIf="card.position === 'defense'" class="text-blue-600 font-extrabold">D:{{ card.defense }}</span>
+                        </div>
+                      </div>
                     </div>
+                  </ng-container>
+
+                  <!-- Empty slot label -->
+                  <div *ngIf="!opponentState().field[slotIdx]" class="flex flex-col items-center justify-center text-slate-350 select-none py-4">
+                    <span class="text-lg opacity-40">🎴</span>
+                    <span class="text-[8px] font-bold uppercase tracking-wider opacity-60 mt-1">Libre</span>
                   </div>
                 </div>
-              </ng-container>
-
-              <!-- Empty slot label -->
-              <span *ngIf="!playerState().field[slotIdx]" class="text-[9px] font-mono font-bold text-slate-600 uppercase tracking-widest">Vacio</span>
-            </div>
-          </div>
-
-          <!-- HAND: Cards in Hand -->
-          <div class="bg-slate-950/80 p-3 rounded-2xl border border-slate-850/60 mt-2">
-            <span class="text-xxs uppercase tracking-wider text-slate-500 font-bold block mb-2 px-1">Tu Mano (Haz clic para invocar)</span>
-            <div class="flex gap-3 overflow-x-auto pb-2 min-h-[155px]">
-              <div *ngFor="let card of playerState().hand; let i = index" 
-                   (click)="summonCard(card, i)"
-                   class="p-0.5 rounded-[14px] min-w-[100px] max-w-[100px] h-[145px] flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-200 hover:-translate-y-2 hover:shadow-xl shadow-md"
-                   [ngClass]="getCardFrameClass(card.type)">
                 
-                <div class="bg-slate-950/95 w-full h-full rounded-[12px] p-1.5 flex flex-col justify-between relative overflow-hidden">
-                  <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
-                  
-                  <!-- Header: Name & Type Icon -->
-                  <div class="w-full flex justify-between items-center z-10">
-                    <span class="text-[7.5px] font-black text-slate-200 truncate max-w-[48px] uppercase">{{ card.name }}</span>
-                    <span class="text-[7px] font-bold text-amber-400 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
-                  </div>
-
-                  <!-- Image Container -->
-                  <div class="h-14 bg-slate-900/60 rounded border border-slate-900 flex items-center justify-center relative overflow-hidden z-10">
-                    <img [src]="card.image" class="h-10 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                  </div>
-
-                  <!-- Footer Stats -->
-                  <div class="grid grid-cols-2 gap-0.5 border-t border-slate-900/60 pt-1 text-[7px] font-mono font-bold z-10">
-                    <div class="text-red-400">⚔️{{ card.attack }}</div>
-                    <div class="text-blue-400">🛡️{{ card.defense }}</div>
-                  </div>
+                <!-- Direct Attack Indicator Overlay -->
+                <div *ngIf="attackingCard() && opponentState().field.length === 0" 
+                     (click)="directAttackOpponent()"
+                     class="absolute inset-0 bg-rose-50/85 border-2 border-rose-400 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-rose-50/90 transition-all z-30 shadow-md">
+                  <span class="text-sm font-bold text-rose-650 font-display animate-pulse tracking-wider">⚔️ ¡HACER ATAQUE DIRECTO!</span>
                 </div>
               </div>
 
-              <div *ngIf="playerState().hand.length === 0" class="w-full text-center py-6 text-slate-600 text-xs italic font-medium">
-                No tienes cartas en tu mano.
+              <!-- Opponent Hand Info Summary -->
+              <div class="flex justify-between items-center text-[9px] px-2 text-slate-400 font-mono font-bold">
+                <div>Mano del oponente: {{ opponentState().hand.length }} cartas</div>
               </div>
             </div>
-          </div>
 
-          <!-- Active Card Action Panel (Only shown when a card on the field is selected) -->
-          <div *ngIf="activeFieldSelection()" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 mt-2 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in">
-            <div class="flex items-center gap-3">
-              <img [src]="activeFieldSelection()?.card?.image" class="h-12 w-auto">
-              <div>
-                <h4 class="font-bold text-sm text-slate-200">{{ activeFieldSelection()?.card?.name }}</h4>
-                <p class="text-xs text-slate-400 leading-relaxed font-mono">
-                  Habilidad: <span class="text-teal-400 font-bold">{{ activeFieldSelection()?.card?.skillName }}</span> - {{ activeFieldSelection()?.card?.skillDesc }}
-                </p>
-              </div>
+            <!-- MIDDLE: SYSTEM LOGS / BANNER -->
+            <div class="bg-indigo-50 border border-indigo-100/80 p-2.5 rounded-2xl text-center text-xs font-mono text-indigo-950 shadow-sm font-bold">
+              🎮 Estado: <span class="text-indigo-650 font-extrabold">{{ logMessage() }}</span>
             </div>
-            <div class="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
-              <!-- Change Position -->
-              <button (click)="changePosition()" 
-                      class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-all">
-                Cambiar Modo (ATK/DEF)
-              </button>
+
+            <!-- PLAYER FIELD ROW -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 flex flex-col gap-2 relative shadow-sm">
+              <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Tu Campo</span>
               
-              <!-- Activate Skill -->
-              <button (click)="activateSkill()" 
-                      [disabled]="hasUsedSkillThisTurn(activeFieldSelection()?.card?.id)"
-                      class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-bold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                ⚡ Habilidad
-              </button>
+              <div class="grid grid-cols-5 gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-200/60 min-h-[160px]">
+                <div *ngFor="let slotIdx of [0,1,2,3,4]" 
+                     (click)="selectPlayerFieldCard(slotIdx)"
+                     class="rounded-xl flex flex-col items-center justify-center p-0.5 relative overflow-hidden transition-all duration-200 min-h-[140px]"
+                     [ngClass]="[
+                       !playerState().field[slotIdx] ? 'border border-dashed border-slate-200/80 bg-slate-100/30' : getCardFrameClass(playerState().field[slotIdx].type),
+                       playerState().field[slotIdx] && isMyTurn() ? 'cursor-pointer hover:scale-102 shadow-sm' : '',
+                       activeFieldSelection()?.slotIdx === slotIdx ? 'ring-4 ring-amber-500 shadow-md scale-102 z-10' : '',
+                       playerState().field[slotIdx] ? getCardAnimationClass(myRole, slotIdx) : ''
+                     ]">
+                  
+                  <!-- If card in slot -->
+                  <ng-container *ngIf="playerState().field[slotIdx] as card">
+                    <div class="relative w-full h-full rounded-[10px] bg-white p-1.5 flex flex-col justify-between items-center text-center overflow-hidden">
+                      <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+                      
+                      <!-- Header: Name & Type Icon -->
+                      <div class="w-full flex justify-between items-center px-0.5 z-10">
+                        <span class="text-[7.5px] font-extrabold text-slate-700 truncate max-w-[45px] uppercase leading-none">{{ card.name }}</span>
+                        <span class="text-[7px] font-bold text-amber-500 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
+                      </div>
 
-              <!-- Attack -->
-              <button (click)="startAttack()" 
-                      *ngIf="activeFieldSelection()?.card?.position === 'attack'"
-                      [disabled]="hasAttackedThisTurn(activeFieldSelection()?.card?.id)"
-                      class="px-3 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                ⚔️ Atacar
-              </button>
+                      <!-- Card image (turned sideways if in defense mode) -->
+                      <div class="h-16 flex items-center justify-center transition-transform duration-355 z-10"
+                           [class.rotate-90]="card.position === 'defense'">
+                        <img [src]="card.image" class="h-12 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+                      </div>
 
-              <!-- Close -->
-              <button (click)="clearSelection()" 
-                      class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition-all border border-slate-850">
-                ✕
-              </button>
+                      <!-- Footer Stats & Mode Badge -->
+                      <div class="w-full flex justify-between items-center px-0.5 z-10 border-t border-slate-100 pt-1 mt-0.5">
+                        <span class="text-[7px] font-bold px-1 py-0.2 rounded font-mono"
+                              [ngClass]="card.position === 'attack' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-blue-50 text-blue-600 border border-blue-100'">
+                          {{ card.position === 'attack' ? 'ATK' : 'DEF' }}
+                        </span>
+                        <div class="flex gap-1 text-[7px] font-mono font-bold text-slate-400">
+                          <span *ngIf="card.position === 'attack'" class="text-rose-600 font-extrabold">A:{{ card.attack }}</span>
+                          <span *ngIf="card.position === 'defense'" class="text-blue-600 font-extrabold">D:{{ card.defense }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <!-- Empty slot label -->
+                  <div *ngIf="!playerState().field[slotIdx]" class="flex flex-col items-center justify-center text-slate-350 select-none py-4">
+                    <span class="text-lg opacity-40">🎴</span>
+                    <span class="text-[8px] font-bold uppercase tracking-wider opacity-60 mt-1">Vacío</span>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- Active Card Action Panel (Only shown when a card on the field is selected) -->
+            <div *ngIf="activeFieldSelection()" class="bg-indigo-50/50 border border-indigo-150 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in shadow-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white border border-slate-150 rounded-xl flex items-center justify-center p-1 shadow-sm shrink-0">
+                  <img [src]="activeFieldSelection()?.card?.image" class="max-h-full max-w-full object-contain">
+                </div>
+                <div>
+                  <h4 class="font-bold text-sm text-slate-850 uppercase tracking-wide flex items-center gap-2">
+                    {{ activeFieldSelection()?.card?.name }}
+                    <span class="text-[9px] px-2 py-0.5 rounded-full font-extrabold border bg-white" [ngClass]="getTypeBadgeClass(activeFieldSelection()?.card?.type || '')">
+                      {{ activeFieldSelection()?.card?.type }}
+                    </span>
+                  </h4>
+                  <p class="text-xs text-slate-650 leading-relaxed font-semibold mt-1">
+                    Habilidad: <span class="text-indigo-650 font-black">⚡ {{ activeFieldSelection()?.card?.skillName }}</span> — {{ activeFieldSelection()?.card?.skillDesc }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 justify-end w-full sm:w-auto shrink-0">
+                <!-- Change Position -->
+                <button (click)="changePosition()" 
+                        class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-205 shadow-xs transition-all active:scale-97">
+                  Cambiar Modo
+                </button>
+                
+                <!-- Activate Skill -->
+                <button (click)="activateSkill()" 
+                        [disabled]="hasUsedSkillThisTurn(activeFieldSelection()?.card?.id)"
+                        class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-550 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-bold rounded-xl shadow-sm active:scale-97 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                  ⚡ Habilidad
+                </button>
+
+                <!-- Attack -->
+                <button (click)="startAttack()" 
+                        *ngIf="activeFieldSelection()?.card?.position === 'attack'"
+                        [disabled]="hasAttackedThisTurn(activeFieldSelection()?.card?.id)"
+                        class="px-3.5 py-2 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-650 text-white text-xs font-bold rounded-xl shadow-sm active:scale-97 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                  ⚔️ Atacar
+                </button>
+
+                <!-- Close -->
+                <button (click)="clearSelection()" 
+                        class="px-3 py-2 bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600 text-xs font-bold rounded-xl transition-all border border-slate-205 shadow-xs">
+                  ✕
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          <!-- Bottom bar: actions & turn controls -->
-          <div class="flex justify-between items-center text-[10px] px-2 text-slate-400 font-mono mt-2">
-            <div>Mazo: {{ playerState().deck.length }} | Cementerio: {{ playerState().discarded.length }}</div>
-            <div class="flex gap-2">
+          <!-- RIGHT: DECK & GRAVEYARD PILES PANEL -->
+          <div class="lg:col-span-2 flex flex-row lg:flex-col justify-around lg:justify-between items-center bg-white border border-slate-200/85 rounded-3xl p-4 shadow-sm min-h-[460px] gap-4">
+            
+            <!-- Opponent Piles -->
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Pilas Rival</span>
+              <div class="flex gap-2 lg:flex-col items-center">
+                <!-- Deck -->
+                <div class="relative w-18 h-24 bg-gradient-to-br from-slate-500 via-slate-655 to-slate-800 rounded-xl border border-slate-605 shadow-md flex items-center justify-center text-center text-white font-bold select-none transition-all hover:scale-102">
+                  <div class="absolute -bottom-1 -right-1 w-full h-full bg-slate-600/60 rounded-xl border border-slate-700/50 -z-10 shadow-xs"></div>
+                  <div class="flex flex-col items-center">
+                    <span class="text-[7px] font-black tracking-widest uppercase">Mazo</span>
+                    <span class="text-xs font-black font-mono mt-0.5">{{ opponentState().deck.length }}</span>
+                  </div>
+                </div>
+                <!-- Graveyard -->
+                <div class="mt-0 lg:mt-2">
+                  <div *ngIf="opponentState().discarded.length === 0" class="w-18 h-24 border border-dashed border-slate-200 bg-slate-50/50 rounded-xl flex items-center justify-center text-slate-350 select-none text-center">
+                    <div class="flex flex-col items-center">
+                      <span class="text-[7px] font-bold uppercase tracking-wider opacity-60">Cem.</span>
+                      <span class="text-xs font-bold font-mono mt-0.5">0</span>
+                    </div>
+                  </div>
+                  <div *ngIf="opponentState().discarded.length > 0" class="relative w-18 h-24 p-0.5 rounded-xl shadow-xs"
+                       [ngClass]="getCardFrameClass(opponentState().discarded[opponentState().discarded.length - 1].type)">
+                    <div class="bg-white w-full h-full rounded-[10px] p-1 flex flex-col justify-between items-center text-center overflow-hidden">
+                      <span class="text-[6.5px] font-black text-slate-705 truncate max-w-[65px] uppercase leading-none mt-1">
+                        {{ opponentState().discarded[opponentState().discarded.length - 1].name }}
+                      </span>
+                      <img [src]="opponentState().discarded[opponentState().discarded.length - 1].image" class="h-8 w-auto object-contain my-0.5 opacity-70">
+                      <span class="text-[6.5px] font-extrabold text-slate-500 font-mono leading-none mb-1">
+                        {{ opponentState().discarded[opponentState().discarded.length - 1].type | uppercase }}
+                      </span>
+                    </div>
+                    <span class="absolute -top-1 -right-1 bg-slate-650 border border-white text-white rounded-full w-4.5 h-4.5 flex items-center justify-center text-[8px] font-bold shadow-xs">
+                      {{ opponentState().discarded.length }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Divider in vertical layout -->
+            <div class="hidden lg:block w-full border-t border-slate-100"></div>
+
+            <!-- Player Piles -->
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Tus Pilas</span>
+              <div class="flex gap-2 lg:flex-col items-center">
+                <!-- Deck -->
+                <div class="relative w-18 h-24 bg-gradient-to-br from-indigo-650 via-indigo-500 to-violet-650 rounded-xl border border-indigo-700 shadow-md flex items-center justify-center text-center text-white font-bold select-none transition-all hover:scale-102">
+                  <div class="absolute -bottom-1 -right-1 w-full h-full bg-indigo-700/60 rounded-xl border border-indigo-800/50 -z-10 shadow-xs"></div>
+                  <div class="flex flex-col items-center">
+                    <span class="text-[7px] font-black tracking-widest uppercase">Mazo</span>
+                    <span class="text-xs font-black font-mono mt-0.5">{{ playerState().deck.length }}</span>
+                  </div>
+                </div>
+                <!-- Graveyard -->
+                <div class="mt-0 lg:mt-2">
+                  <div *ngIf="playerState().discarded.length === 0" class="w-18 h-24 border border-dashed border-slate-200 bg-slate-50/50 rounded-xl flex items-center justify-center text-slate-350 select-none text-center">
+                    <div class="flex flex-col items-center">
+                      <span class="text-[7px] font-bold uppercase tracking-wider opacity-60">Cem.</span>
+                      <span class="text-xs font-bold font-mono mt-0.5">0</span>
+                    </div>
+                  </div>
+                  <div *ngIf="playerState().discarded.length > 0" class="relative w-18 h-24 p-0.5 rounded-xl shadow-xs"
+                       [ngClass]="getCardFrameClass(playerState().discarded[playerState().discarded.length - 1].type)">
+                    <div class="bg-white w-full h-full rounded-[10px] p-1 flex flex-col justify-between items-center text-center overflow-hidden">
+                      <span class="text-[6.5px] font-black text-slate-750 truncate max-w-[65px] uppercase leading-none mt-1">
+                        {{ playerState().discarded[playerState().discarded.length - 1].name }}
+                      </span>
+                      <img [src]="playerState().discarded[playerState().discarded.length - 1].image" class="h-8 w-auto object-contain my-0.5 opacity-70">
+                      <span class="text-[6.5px] font-extrabold text-slate-500 font-mono leading-none mb-1">
+                        {{ playerState().discarded[playerState().discarded.length - 1].type | uppercase }}
+                      </span>
+                    </div>
+                    <span class="absolute -top-1 -right-1 bg-indigo-650 border border-white text-white rounded-full w-4.5 h-4.5 flex items-center justify-center text-[8px] font-bold shadow-xs">
+                      {{ playerState().discarded.length }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Divider in vertical layout -->
+            <div class="hidden lg:block w-full border-t border-slate-100"></div>
+
+            <!-- Controles de Duelo -->
+            <div class="w-full flex flex-col gap-2">
               <button (click)="endPhase()" [disabled]="!isMyTurn()"
-                      class="px-4 py-1.5 bg-teal-500 text-slate-950 font-bold rounded-lg hover:bg-teal-400 active:scale-98 transition-all disabled:opacity-40">
-                {{ gameState.phase === 'attack' ? 'TERMINAR TURNO' : 'SIGUIENTE FASE' }}
+                      class="w-full py-2 bg-indigo-600 text-white text-[10px] font-black rounded-xl hover:bg-indigo-500 active:scale-97 transition-all disabled:opacity-45 shadow-sm shadow-indigo-100 cursor-pointer uppercase tracking-wider">
+                {{ gameState.phase === 'attack' ? 'Terminar Turno' : 'Siguiente Fase' }}
               </button>
               <button (click)="surrender()" 
-                      class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 font-semibold rounded-lg transition-all">
-                RENDIRSE
+                      class="w-full py-2 bg-rose-50 hover:bg-rose-100 border border-rose-150 text-rose-600 text-[10px] font-black rounded-xl transition-all shadow-xs cursor-pointer uppercase tracking-wider">
+                Rendirse
               </button>
             </div>
+
           </div>
+
         </div>
 
+        <!-- BOTTOM HAND: Fanned Cards in Hand -->
+        <div class="bg-slate-50/60 p-4 rounded-3xl border border-slate-200/80 mt-2 overflow-visible">
+          <span class="text-[10px] uppercase tracking-wider text-slate-500 font-bold block mb-1 px-1">Tu Mano (Haz clic para invocar)</span>
+          
+          <div class="flex justify-center items-center -space-x-8 overflow-visible py-4 min-h-[170px]">
+            <div *ngFor="let card of playerState().hand; let i = index" 
+                 (click)="summonCard(card, i)"
+                 class="p-0.5 rounded-[14px] w-[100px] h-[145px] flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-8 hover:scale-115 hover:z-30 hover:shadow-lg shadow-sm bg-white shrink-0 origin-bottom hover:mx-2 hover:rotate-1"
+                 [ngClass]="getCardFrameClass(card.type)">
+              
+              <div class="bg-white w-full h-full rounded-[12px] p-1.5 flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute inset-0 opacity-[0.03] filter blur-xl pointer-events-none" [ngClass]="getTypeBgClass(card.type)"></div>
+                
+                <!-- Header: Name & Type Icon -->
+                <div class="w-full flex justify-between items-center z-10">
+                  <span class="text-[7.5px] font-bold text-slate-800 truncate max-w-[48px] uppercase leading-none">{{ card.name }}</span>
+                  <span class="text-[7px] font-bold text-amber-500 font-mono tracking-tighter">{{ getRarityStars(card.rarity) }}</span>
+                </div>
+
+                <!-- Image Container -->
+                <div class="h-14 bg-slate-50 rounded border border-slate-100 flex items-center justify-center relative overflow-hidden z-10">
+                  <img [src]="card.image" class="h-10 w-auto object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+                </div>
+
+                <!-- Footer Stats -->
+                <div class="grid grid-cols-2 gap-0.5 border-t border-slate-100 pt-1 text-[7px] font-mono font-bold z-10 text-center">
+                  <div class="text-rose-600 font-extrabold">⚔️{{ card.attack }}</div>
+                  <div class="text-blue-650 font-extrabold">🛡️{{ card.defense }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="playerState().hand.length === 0" class="w-full text-center py-6 text-slate-400 text-xs italic font-medium">
+            No tienes cartas en tu mano.
+          </div>
       </div>
 
       <!-- 3. RESULT MODAL -->
-      <div *ngIf="showResultModal()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-sm w-full text-center space-y-6 shadow-2xl animate-scale-up">
-          <div class="text-6xl">{{ winner() === 'player' ? '🏆' : '💀' }}</div>
-          <h3 class="text-3xl font-black font-display tracking-wider uppercase"
-              [ngClass]="winner() === 'player' ? 'text-teal-400' : 'text-rose-500'">
+      <div *ngIf="showResultModal()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
+        <div class="bg-white border border-slate-200 p-8 rounded-3xl max-w-sm w-full text-center space-y-6 shadow-2xl animate-scale-up">
+          <div class="text-7xl drop-shadow-md select-none animate-bounce">{{ winner() === 'player' ? '🏆' : '💀' }}</div>
+          <h3 class="text-3xl font-black tracking-wider uppercase font-display"
+              [ngClass]="winner() === 'player' ? 'text-indigo-600' : 'text-rose-650'">
             {{ winner() === 'player' ? '¡VICTORIA!' : '¡DERROTA!' }}
           </h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
+          <p class="text-sm text-slate-550 font-semibold leading-relaxed">
             {{ winner() === 'player' 
               ? 'Has derrotado a tu oponente con éxito y ganado la partida.' 
               : 'Tu oponente te ha derrotado esta vez. ¡Sigue entrenando y reconstruye tu mazo!' }}
           </p>
-          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-850 font-mono text-xs text-left space-y-2">
-            <div><span class="text-slate-500">Tus LP Finales:</span> <span class="font-bold text-teal-400">{{ playerState().lp }}</span></div>
-            <div><span class="text-slate-500">LP Oponente:</span> <span class="font-bold text-red-400">{{ opponentState().lp }}</span></div>
-            <div><span class="text-slate-500">Modo de Juego:</span> <span class="font-bold text-slate-300 uppercase">{{ isOnlineMode ? 'Online PvP' : 'vs Computadora' }}</span></div>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-150 font-mono text-xs text-left space-y-2 text-slate-650 shadow-inner">
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Tus LP Finales:</span> <span class="font-bold text-indigo-650">{{ playerState().lp }}</span></div>
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">LP Oponente:</span> <span class="font-bold text-rose-650">{{ opponentState().lp }}</span></div>
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Modo de Juego:</span> <span class="font-bold text-slate-600 uppercase">{{ isOnlineMode ? 'Online PvP' : 'vs CPU' }}</span></div>
           </div>
           <button (click)="exitGame()" 
-                  class="w-full py-3 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold rounded-xl active:scale-98 transition-all">
+                  class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl active:scale-98 transition-all shadow-md shadow-indigo-250/20 cursor-pointer">
             VOLVER AL MENÚ
           </button>
         </div>
@@ -1350,22 +1486,22 @@ export class GameComponent implements OnInit, OnDestroy {
 
   getTypeBadgeClass(type: string): string {
     switch (type.toLowerCase()) {
-      case 'fire': return 'bg-red-500/20 text-red-300 border-red-500/35';
-      case 'water': return 'bg-blue-500/20 text-blue-300 border-blue-500/35';
-      case 'grass': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35';
-      case 'electric': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/35';
-      case 'psychic': return 'bg-purple-500/20 text-purple-300 border-purple-500/35';
-      case 'poison': return 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/35';
-      case 'ground': return 'bg-amber-700/20 text-amber-300 border-amber-700/35';
-      case 'flying': return 'bg-sky-500/20 text-sky-300 border-sky-500/35';
-      case 'bug': return 'bg-lime-500/20 text-lime-300 border-lime-500/35';
-      case 'rock': return 'bg-stone-500/20 text-stone-300 border-stone-500/35';
-      case 'ghost': return 'bg-indigo-950/40 text-indigo-300 border-indigo-800/35';
-      case 'dragon': return 'bg-violet-950/40 text-violet-300 border-violet-800/35';
-      case 'steel': return 'bg-slate-500/20 text-slate-300 border-slate-500/35';
-      case 'fairy': return 'bg-pink-500/20 text-pink-300 border-pink-500/35';
-      case 'ice': return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/35';
-      default: return 'bg-slate-500/20 text-slate-300 border-slate-500/35';
+      case 'fire': return 'bg-rose-50 text-rose-600 border-rose-200';
+      case 'water': return 'bg-blue-50 text-blue-650 border-blue-200';
+      case 'grass': return 'bg-emerald-50 text-emerald-650 border-emerald-250';
+      case 'electric': return 'bg-amber-50 text-amber-700 border-amber-300';
+      case 'psychic': return 'bg-purple-50 text-purple-650 border-purple-200';
+      case 'poison': return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200';
+      case 'ground': return 'bg-amber-50 text-amber-800 border-amber-250';
+      case 'flying': return 'bg-sky-50 text-sky-600 border-sky-200';
+      case 'bug': return 'bg-lime-50 text-lime-650 border-lime-200';
+      case 'rock': return 'bg-stone-50 text-stone-605 border-stone-250';
+      case 'ghost': return 'bg-indigo-50 text-indigo-650 border-indigo-200';
+      case 'dragon': return 'bg-violet-50 text-violet-750 border-violet-250';
+      case 'steel': return 'bg-slate-100 text-slate-655 border-slate-250';
+      case 'fairy': return 'bg-pink-50 text-pink-600 border-pink-200';
+      case 'ice': return 'bg-cyan-50 text-cyan-600 border-cyan-200';
+      default: return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   }
 
