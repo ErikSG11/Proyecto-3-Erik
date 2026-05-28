@@ -5,73 +5,104 @@
 @theme {
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: 'Outfit', sans-serif;
+  --font-mono: 'Orbitron', monospace;
   
-  --color-pokemon-fire: #ef4444;
-  --color-pokemon-water: #3b82f6;
-  --color-pokemon-grass: #10b981;
-  --color-pokemon-electric: #eab308;
-  --color-pokemon-psychic: #a855f7;
-  --color-pokemon-normal: #6b7280;
+  --color-pokemon-fire: #e11d48;
+  --color-pokemon-water: #0284c7;
+  --color-pokemon-grass: #059669;
+  --color-pokemon-electric: #d97706;
+  --color-pokemon-psychic: #7c3aed;
+  --color-pokemon-normal: #475569;
 }
 
 body {
   font-family: var(--font-sans);
+  background-color: #0f172a;
+  color: #f1f5f9;
 }
 
-.title-glow {
-  text-shadow: 0 2px 10px rgba(99, 102, 241, 0.2);
+/* Custom minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
 }
 
-.card-glow-legendary {
-  box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.3), 0 8px 10px -6px rgba(234, 179, 8, 0.3);
+/* Glassmorphism containers */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  backdrop-filter: blur(12px);
 }
 
-.card-glow-rare {
-  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.25), 0 8px 10px -6px rgba(168, 85, 247, 0.25);
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+/* Card custom layouts */
+.card-shadow-premium {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3), 0 2px 8px -1px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-shadow-premium:hover {
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.4), 0 4px 16px -2px rgba(0, 0, 0, 0.3);
 }
 
 /* Battle animations */
 @keyframes player-attack {
   0% { transform: translateY(0) scale(1); z-index: 50; }
-  25% { transform: translateY(15px) scale(0.95); }
-  50% { transform: translateY(-70px) scale(1.1) rotate(-3deg); }
-  75% { transform: translateY(-70px) scale(1.1) rotate(-3deg); }
+  25% { transform: translateY(10px) scale(0.97); }
+  50% { transform: translateY(-50px) scale(1.05); }
+  75% { transform: translateY(-50px) scale(1.05); }
   100% { transform: translateY(0) scale(1); }
 }
 
 .animate-player-attack {
-  animation: player-attack 0.8s ease-in-out forwards;
+  animation: player-attack 0.6s ease-in-out forwards;
 }
 
 @keyframes cpu-attack {
   0% { transform: translateY(0) scale(1); z-index: 50; }
-  25% { transform: translateY(-15px) scale(0.95); }
-  50% { transform: translateY(70px) scale(1.1) rotate(3deg); }
-  75% { transform: translateY(70px) scale(1.1) rotate(3deg); }
+  25% { transform: translateY(-10px) scale(0.97); }
+  50% { transform: translateY(50px) scale(1.05); }
+  75% { transform: translateY(50px) scale(1.05); }
   100% { transform: translateY(0) scale(1); }
 }
 
 .animate-cpu-attack {
-  animation: cpu-attack 0.8s ease-in-out forwards;
+  animation: cpu-attack 0.6s ease-in-out forwards;
 }
 
 @keyframes card-damage {
-  0%, 100% { transform: translateX(0); filter: brightness(1) drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
-  15%, 45%, 75% { transform: translateX(-8px); filter: brightness(1.4) drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) sepia(0.3) saturate(1.5) hue-rotate(-20deg); }
-  30%, 60%, 90% { transform: translateX(8px); filter: brightness(1.4) drop-shadow(0 0 15px rgba(239, 68, 68, 0.8)) sepia(0.3) saturate(1.5) hue-rotate(-20deg); }
+  0%, 100% { transform: translateX(0); filter: brightness(1); }
+  20%, 60% { transform: translateX(-4px); filter: brightness(1.2) sepia(0.2) saturate(1.2); }
+  40%, 80% { transform: translateX(4px); filter: brightness(1.2) sepia(0.2) saturate(1.2); }
 }
 
 .animate-card-damage {
-  animation: card-damage 0.5s ease-in-out forwards;
+  animation: card-damage 0.4s ease-in-out forwards;
 }
 
 @keyframes card-destroy {
-  0% { transform: scale(1) rotate(0deg); filter: brightness(1) grayscale(0); opacity: 1; }
-  30% { transform: scale(1.15) rotate(-5deg); filter: brightness(1.8) grayscale(0.2) drop-shadow(0 0 25px rgba(239, 68, 68, 0.9)); }
-  100% { transform: scale(0) rotate(15deg); filter: brightness(0.2) grayscale(1); opacity: 0; }
+  0% { transform: scale(1); opacity: 1; filter: grayscale(0); }
+  40% { transform: scale(1.05); opacity: 0.8; filter: grayscale(0.5) brightness(1.2); }
+  100% { transform: scale(0.8); opacity: 0; filter: grayscale(1) brightness(0.5); }
 }
 
 .animate-card-destroy {
-  animation: card-destroy 0.8s ease-in forwards;
+  animation: card-destroy 0.6s ease-out forwards;
 }
+
 

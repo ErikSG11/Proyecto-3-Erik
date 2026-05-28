@@ -1,160 +1,150 @@
-<div class="flex flex-col md:flex-row min-h-screen bg-slate-50 text-slate-800 font-sans">
+<div class="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans">
 
-  <!-- 1. DESKTOP SIDEBAR -->
-  <aside class="w-64 h-screen bg-white border-r border-slate-200/80 fixed top-0 left-0 hidden md:flex flex-col justify-between p-6 z-40 shadow-sm">
-    <div class="space-y-8">
-      <!-- Brand Logo -->
-      <a routerLink="/" class="flex items-center gap-3 group px-2">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white text-lg font-black shadow-sm">
-          P
+  <!-- 1. STICKY TOP NAVBAR -->
+  <header class="w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-850 sticky top-0 z-40 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo Brand -->
+      <a routerLink="/" class="flex items-center gap-3 group shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-lg font-black shadow-md shadow-indigo-900/30">
+          PG
         </div>
         <div class="flex flex-col">
-          <span class="text-xl font-extrabold font-display tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 uppercase leading-none">
-            PokeTese
+          <span class="text-lg font-extrabold tracking-wider text-slate-100 uppercase leading-none font-display">
+            PokeGame
           </span>
+          <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Card Battle Arena</span>
         </div>
       </a>
 
-      <!-- Desktop Nav Links -->
-      <nav class="flex flex-col gap-1 text-sm font-semibold tracking-wide">
-        <a routerLink="/" routerLinkActive="bg-indigo-50 text-indigo-650" [routerLinkActiveOptions]="{exact: true}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-550 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
-          <span class="text-lg">🏠</span>
+      <!-- Desktop Navigation Links (hidden on mobile) -->
+      <nav class="hidden md:flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+        <a routerLink="/" routerLinkActive="bg-indigo-950/45 text-indigo-400 border-indigo-500" [routerLinkActiveOptions]="{exact: true}" 
+           class="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition-all duration-200 border-b-2 border-transparent">
+          <span>🏠</span>
           <span>Inicio</span>
         </a>
-        <a routerLink="/collection" routerLinkActive="bg-indigo-50 text-indigo-655"
-           class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-550 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
-          <span class="text-lg">🎴</span>
+        <a routerLink="/collection" routerLinkActive="bg-indigo-950/45 text-indigo-400 border-indigo-500"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition-all duration-200 border-b-2 border-transparent">
+          <span>🎴</span>
           <span>Colección</span>
         </a>
-        <a routerLink="/history" routerLinkActive="bg-indigo-50 text-indigo-655"
-           class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-550 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
-          <span class="text-lg">📊</span>
+        <a routerLink="/history" routerLinkActive="bg-indigo-950/45 text-indigo-400 border-indigo-500"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition-all duration-200 border-b-2 border-transparent">
+          <span>📊</span>
           <span>Historial</span>
         </a>
-        <a routerLink="/help" routerLinkActive="bg-indigo-50 text-indigo-655"
-           class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-550 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
-          <span class="text-lg">📖</span>
+        <a routerLink="/help" routerLinkActive="bg-indigo-950/45 text-indigo-400 border-indigo-500"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition-all duration-200 border-b-2 border-transparent">
+          <span>📖</span>
           <span>Reglas</span>
         </a>
-        <a routerLink="/settings" routerLinkActive="bg-indigo-50 text-indigo-655"
-           class="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-550 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200">
-          <span class="text-lg">⚙️</span>
+        <a routerLink="/settings" routerLinkActive="bg-indigo-950/45 text-indigo-400 border-indigo-500"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition-all duration-200 border-b-2 border-transparent">
+          <span>⚙️</span>
           <span>Ajustes</span>
         </a>
       </nav>
-    </div>
 
-    <!-- Desktop Sidebar Footer (User / Status Area) -->
-    <div class="space-y-4 pt-4 border-t border-slate-100">
-      <!-- Status Badge -->
-      <div class="flex items-center justify-between px-2">
-        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Servidor</span>
-        <span *ngIf="!isSupabaseConfigured()" 
-              class="text-[9px] font-mono font-bold bg-rose-50 text-rose-600 border border-rose-100 px-2 py-0.5 rounded-full"
-              routerLink="/settings" title="Supabase Offline - Configura en Ajustes">
-          Local Only
-        </span>
-        <span *ngIf="isSupabaseConfigured() && !userProfile()" 
-              class="text-[9px] font-mono font-bold bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-full cursor-pointer animate-pulse"
-              routerLink="/auth">
-          En línea
-        </span>
-        <span *ngIf="isSupabaseConfigured() && userProfile()" 
-              class="text-[9px] font-mono font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full">
-          Conectado
-        </span>
-      </div>
-
-      <!-- Auth profile widget -->
-      <div *ngIf="userProfile(); else desktopLoginBtn" class="bg-slate-50 border border-slate-150 p-3 rounded-2xl flex flex-col gap-2">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-655 flex items-center justify-center font-bold text-xs shadow-inner">
-            {{ userProfile().username.charAt(0).toUpperCase() }}
-          </div>
-          <span class="font-bold text-xs text-slate-700 truncate flex-1">{{ userProfile().username }}</span>
+      <!-- Desktop Right Area: Server / Auth widget (hidden on mobile) -->
+      <div class="hidden md:flex items-center gap-4 shrink-0">
+        <!-- Status Indicator -->
+        <div class="flex items-center gap-2 bg-slate-950/40 border border-slate-850 px-3 py-1.5 rounded-full text-[10px]">
+          <span class="text-slate-500 font-bold uppercase tracking-wider">Servidor:</span>
+          <span *ngIf="!isSupabaseConfigured()" 
+                class="font-mono font-bold text-slate-400 cursor-pointer hover:text-slate-200"
+                routerLink="/settings" title="Supabase Offline - Configura en Ajustes">
+            Local
+          </span>
+          <span *ngIf="isSupabaseConfigured() && !userProfile()" 
+                class="font-mono font-bold text-amber-400 cursor-pointer animate-pulse"
+                routerLink="/auth" title="Haz clic para iniciar sesión">
+            Desconectado
+          </span>
+          <span *ngIf="isSupabaseConfigured() && userProfile()" 
+                class="font-mono font-bold text-emerald-400">
+            En línea
+          </span>
         </div>
-        <button (click)="handleSignOut()" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 font-bold text-[10px] rounded-xl transition-all">
-          Cerrar Sesión
-        </button>
+
+        <!-- Auth profile status -->
+        <div *ngIf="userProfile(); else desktopLoginBtn" class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-slate-850/40 border border-slate-800 px-3 py-1.5 rounded-xl">
+            <div class="w-5 h-5 rounded-md bg-indigo-650/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-[10px]">
+              {{ userProfile().username.charAt(0).toUpperCase() }}
+            </div>
+            <span class="font-bold text-xs text-slate-350 truncate max-w-[120px]">{{ userProfile().username }}</span>
+          </div>
+          <button (click)="handleSignOut()" class="px-3 py-1.5 bg-rose-950/20 hover:bg-rose-900/40 border border-rose-500/20 hover:border-rose-500/40 text-rose-400 font-bold text-[10px] rounded-xl transition-all cursor-pointer">
+            Salir
+          </button>
+        </div>
+
+        <ng-template #desktopLoginBtn>
+          <a *ngIf="isSupabaseConfigured()" routerLink="/auth" 
+             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-98">
+            INICIAR SESIÓN
+          </a>
+        </ng-template>
       </div>
 
-      <ng-template #desktopLoginBtn>
-        <a *ngIf="isSupabaseConfigured()" routerLink="/auth" 
-           class="block text-center py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all shadow-indigo-100/35 active:scale-98">
-          INICIAR SESIÓN
-        </a>
-      </ng-template>
-    </div>
-  </aside>
-
-  <!-- 2. MOBILE HEADER & NAVIGATION -->
-  <!-- Mobile Top Bar -->
-  <header class="md:hidden flex justify-between items-center px-4 py-3 bg-white border-b border-slate-150 sticky top-0 z-40 shadow-sm">
-    <a routerLink="/" class="flex items-center gap-2 group">
-      <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white text-sm font-black shadow-sm">
-        P
+      <!-- Mobile Right Area: Quick Status indicator (hidden on desktop) -->
+      <div class="md:hidden flex items-center gap-2 shrink-0">
+        <span *ngIf="!isSupabaseConfigured()" 
+              class="text-[8px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700/60 px-1.5 py-0.5 rounded"
+              routerLink="/settings">Local</span>
+        <span *ngIf="isSupabaseConfigured() && !userProfile()" 
+              routerLink="/auth"
+              class="text-[8px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/25 px-1.5 py-0.5 rounded animate-pulse">Ingresar</span>
+        
+        <div *ngIf="userProfile()" class="flex items-center gap-1.5 bg-slate-850/60 border border-slate-800 px-2 py-1 rounded-lg text-[10px] font-bold text-slate-350 shadow-inner">
+          <span>👋 {{ userProfile().username }}</span>
+        </div>
       </div>
-      <span class="text-lg font-extrabold font-display tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 uppercase">
-        PokeTese
-      </span>
-    </a>
 
-    <!-- Mobile Auth indicators -->
-    <div class="flex items-center gap-2">
-      <span *ngIf="!isSupabaseConfigured()" 
-            class="text-[8px] font-mono font-bold bg-rose-50 text-rose-605 border border-rose-100 px-1.5 py-0.5 rounded"
-            routerLink="/settings">Local</span>
-      <span *ngIf="isSupabaseConfigured() && !userProfile()" 
-            routerLink="/auth"
-            class="text-[8px] font-mono font-bold bg-amber-50 text-amber-605 border border-amber-100 px-1.5 py-0.5 rounded animate-pulse">Log In</span>
-      
-      <div *ngIf="userProfile()" class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-xl text-[10px] font-bold text-slate-700">
-        <span>👋 {{ userProfile().username }}</span>
-      </div>
     </div>
   </header>
 
-  <!-- Mobile Floating Bottom Navbar -->
-  <nav class="md:hidden fixed bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-3xl py-2 px-3 flex justify-around items-center z-40 shadow-lg">
-    <a routerLink="/" routerLinkActive="text-indigo-600 bg-indigo-50/50" [routerLinkActiveOptions]="{exact: true}" 
-       class="flex flex-col items-center justify-center p-2 rounded-2xl text-slate-500 transition-all duration-200 flex-1">
+  <!-- 2. MOBILE FLOATING BOTTOM NAVBAR (hidden on desktop) -->
+  <nav class="md:hidden fixed bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-2xl py-2 px-3 flex justify-around items-center z-40 shadow-2xl">
+    <a routerLink="/" routerLinkActive="text-indigo-400 bg-indigo-950/40" [routerLinkActiveOptions]="{exact: true}" 
+       class="flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 transition-all duration-200 flex-1">
       <span class="text-lg leading-none">🏠</span>
       <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Inicio</span>
     </a>
-    <a routerLink="/collection" routerLinkActive="text-indigo-600 bg-indigo-50/50"
-       class="flex flex-col items-center justify-center p-2 rounded-2xl text-slate-500 transition-all duration-200 flex-1">
+    <a routerLink="/collection" routerLinkActive="text-indigo-400 bg-indigo-950/40"
+       class="flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 transition-all duration-200 flex-1">
       <span class="text-lg leading-none">🎴</span>
       <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Mazo</span>
     </a>
-    <a routerLink="/history" routerLinkActive="text-indigo-600 bg-indigo-50/50"
-       class="flex flex-col items-center justify-center p-2 rounded-2xl text-slate-500 transition-all duration-200 flex-1">
+    <a routerLink="/history" routerLinkActive="text-indigo-400 bg-indigo-950/40"
+       class="flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 transition-all duration-200 flex-1">
       <span class="text-lg leading-none">📊</span>
       <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Duelos</span>
     </a>
-    <a routerLink="/help" routerLinkActive="text-indigo-600 bg-indigo-50/50"
-       class="flex flex-col items-center justify-center p-2 rounded-2xl text-slate-500 transition-all duration-200 flex-1">
+    <a routerLink="/help" routerLinkActive="text-indigo-400 bg-indigo-950/40"
+       class="flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 transition-all duration-200 flex-1">
       <span class="text-lg leading-none">📖</span>
       <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Guía</span>
     </a>
-    <a routerLink="/settings" routerLinkActive="text-indigo-600 bg-indigo-50/50"
-       class="flex flex-col items-center justify-center p-2 rounded-2xl text-slate-500 transition-all duration-200 flex-1">
+    <a routerLink="/settings" routerLinkActive="text-indigo-400 bg-indigo-950/40"
+       class="flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 transition-all duration-200 flex-1">
       <span class="text-lg leading-none">⚙️</span>
       <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Ajustes</span>
     </a>
   </nav>
 
   <!-- 3. MAIN ROUTED VIEW CONTAINER -->
-  <div class="flex-1 md:pl-64 flex flex-col min-h-screen pb-20 md:pb-0">
+  <div class="flex-1 flex flex-col min-h-screen pb-20 md:pb-0">
     <main class="flex-1 p-4 md:p-8">
       <router-outlet></router-outlet>
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-white border-t border-slate-250/20 py-6 text-center text-xs text-slate-400 font-medium hidden md:block">
+    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 font-medium hidden md:block">
       <div class="max-w-4xl mx-auto px-4 space-y-1">
-        <p>PokeTese © 2026 - Proyecto Integrador de Desarrollo de Aplicaciones Web</p>
-        <p class="text-[9px] text-slate-400">PokeAPI + SQLite WASM Local + Supabase Realtime</p>
+        <p>PokeGame © 2026 - Proyecto Integrador de Desarrollo de Aplicaciones Web</p>
+        <p class="text-[9px] text-slate-600">PokeAPI + SQLite WASM Local + Supabase Realtime</p>
       </div>
     </footer>
   </div>
