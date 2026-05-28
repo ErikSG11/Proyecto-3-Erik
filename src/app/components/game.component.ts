@@ -558,28 +558,39 @@ export class GameComponent implements OnInit, OnDestroy {
   constructor() {}
 
   async ngOnInit() {
-    await this.sqliteService.initialize();
+    try {
+      await this.sqliteService.initialize();
+    } catch (e) {
+      console.error('Error inicializando SQLite:', e);
+    }
+
     this.isOnlineMode = this.router.url.includes('online');
 
-    const configured = await this.supabaseService.initialize();
     if (this.isOnlineMode) {
-      if (!configured) {
-        alert('Supabase no está configurado. Ve a Configuración para enlazar tu base de datos.');
-        this.router.navigate(['/settings']);
-        return;
-      }
-      
-      // Esperar a que la autenticación de Supabase se haya inicializado por completo
-      while (!this.supabaseService.authInitialized()) {
-        await new Promise(r => setTimeout(r, 100));
-      }
+      try {
+        const configured = await this.supabaseService.initialize();
+        if (!configured) {
+          console.warn('Supabase no está configurado para modo online.');
+          // El template ya muestra el mensaje de "debes iniciar sesión"
+          return;
+        }
 
-      const user = this.currentUserProfile();
-      if (!user) {
-        alert('Debes registrarte o iniciar sesión para poder jugar partidas en línea.');
-        this.router.navigate(['/auth']);
-        return;
+        // Esperar a que la autenticación se inicialice, con un timeout de 5 segundos
+        let waitMs = 0;
+        while (!this.supabaseService.authInitialized() && waitMs < 5000) {
+          await new Promise(r => setTimeout(r, 100));
+          waitMs += 100;
+        }
+
+        if (!this.supabaseService.authInitialized()) {
+          console.warn('Timeout esperando authInitialized. Continuando sin sesión activa.');
+        }
+      } catch (e) {
+        console.error('Error inicializando Supabase para modo online:', e);
       }
+      // El template se encarga de mostrar el estado correcto:
+      // - Si no hay usuario logueado, muestra el enlace para iniciar sesión
+      // - Si hay usuario, muestra las opciones de crear/unirse a sala
     } else {
       // Local CPU game setup
       this.startCpuGame();
