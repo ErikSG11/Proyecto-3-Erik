@@ -161,16 +161,26 @@ export class SqliteService {
     // Pre-populate with default active Supabase project credentials if not present
     const checkUrl = this.db.prepare("SELECT value FROM local_settings WHERE key = 'supabase_url'");
     let hasSettings = false;
+    let urlValue = '';
     if (checkUrl.step()) {
       hasSettings = true;
+      const res = checkUrl.getAsObject();
+      urlValue = res ? res.value : '';
     }
     checkUrl.free();
 
     if (!hasSettings) {
       this.db.run(`
         INSERT INTO local_settings (key, value) VALUES 
-        ('supabase_url', 'https://ceysoodnrvimldsczelc.supabase.co'),
-        ('supabase_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNleXNvb2RucnZpbWxkc2N6ZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIxNTksImV4cCI6MjA5NTMxODE1OX0.GQxX-OiMU8AsaJnmucYtKDEEV_33e3-AvNUbXLxFVow')
+        ('supabase_url', 'https://pmaecdudeqoeeiwnondt.supabase.co'),
+        ('supabase_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtYWVjZHVkZXFvZWVpd25vbmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTE0MzUsImV4cCI6MjA5NTU2NzQzNX0.fSNB7-esfyLxNUXou8wGgerufCDeaVgFJTq7qwP8nAs')
+      `);
+    } else if (urlValue === 'https://ceysoodnrvimldsczelc.supabase.co') {
+      this.db.run(`
+        UPDATE local_settings SET value = 'https://pmaecdudeqoeeiwnondt.supabase.co' WHERE key = 'supabase_url';
+      `);
+      this.db.run(`
+        UPDATE local_settings SET value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtYWVjZHVkZXFvZWVpd25vbmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTE0MzUsImV4cCI6MjA5NTU2NzQzNX0.fSNB7-esfyLxNUXou8wGgerufCDeaVgFJTq7qwP8nAs' WHERE key = 'supabase_key';
       `);
     }
 
