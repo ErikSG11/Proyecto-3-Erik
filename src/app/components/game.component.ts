@@ -1291,7 +1291,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.showResultModal.set(true);
 
     if (this.isOnlineMode) {
-      const winnerId = isPlayerWin ? this.currentUserProfile().id : this.opponentState().id;
+      const winnerId = isPlayerWin ? this.currentUserProfile()?.id : this.opponentState()?.id;
       this.gameState.winner = winnerId;
       this.supabaseService.finishRoomMatch(this.roomId, winnerId, this.gameState);
     } else {
@@ -1411,10 +1411,13 @@ export class GameComponent implements OnInit, OnDestroy {
 
             this.isPlaying.set(true);
             this.logMessage.set('¡Oponente encontrado! La batalla comienza.');
-          } else if (newRoom.status === 'finished') {
+          } else if (newRoom.status === 'finished' || remoteState?.status === 'finished') {
             // Match finished
+            console.log('Online match finished detected. final game state:', remoteState);
             this.gameState = remoteState;
-            const isWinner = this.gameState.winner === this.currentUserProfile().id;
+            const myId = this.currentUserProfile()?.id;
+            const isWinner = this.gameState?.winner === myId;
+            console.log('Calculated winner:', this.gameState?.winner, 'My ID:', myId, 'isWinner:', isWinner);
             this.winner.set(isWinner ? 'player' : 'opponent');
             this.showResultModal.set(true);
             this.cleanupRealtime();
