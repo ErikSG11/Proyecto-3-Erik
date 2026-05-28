@@ -541,6 +541,7 @@ export class GameComponent implements OnInit, OnDestroy {
   currentRoomCode = signal('');
   roomId = '';
   myRole: 'p1' | 'p2' = 'p1';
+  processedDrawTurn = false;
   currentUserProfile = this.supabaseService.currentUserProfile;
   loadingOnline = signal(false);
   realtimeSubscription: any = null;
@@ -923,7 +924,7 @@ export class GameComponent implements OnInit, OnDestroy {
   drawCard(playerKey: 'p1' | 'p2'): boolean {
     const state = this.gameState[playerKey];
     if (state.deck.length === 0) {
-      this.declareWinner(playerKey === 'p1' ? 'opponent' : 'player');
+      this.declareWinner(playerKey === this.myRole ? 'opponent' : 'player');
       return false;
     }
 
@@ -1251,8 +1252,7 @@ export class GameComponent implements OnInit, OnDestroy {
           // Shift turn to opponent
           this.gameState.turn = this.opponentState().id!;
           this.gameState.phase = 'draw';
-          // Draw a card for the opponent
-          this.drawCard(this.myRole === 'p1' ? 'p2' : 'p1');
+          // Card will be drawn reactively by the opponent on their client
           this.syncOnlineState();
         } else {
           this.startCpuTurn();
@@ -1263,20 +1263,20 @@ export class GameComponent implements OnInit, OnDestroy {
 
   surrender() {
     if (confirm('¿Estás seguro de que quieres rendirte? Cuenta como derrota.')) {
-      this.declareWinner(this.myRole === 'p1' ? 'opponent' : 'player');
+      this.declareWinner('opponent');
     }
   }
 
   // --- CHECK GAME WINNER ---
   checkGameEnded(): boolean {
-    const p1 = this.gameState.p1;
-    const p2 = this.gameState.p2;
+    const me = this.playerState();
+    const opp = this.opponentState();
 
-    if (p1.lp <= 0) {
+    if (me.lp <= 0) {
       this.declareWinner('opponent');
       return true;
     }
-    if (p2.lp <= 0) {
+    if (opp.lp <= 0) {
       this.declareWinner('player');
       return true;
     }
@@ -1292,8 +1292,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
     if (this.isOnlineMode) {
       const winnerId = isPlayerWin ? this.currentUserProfile().id : this.opponentState().id;
-      this.supabaseService.finishRoomMatch(this.roomId, winnerId);
+      this.gameState.winner = winnerId;
+      this.supabaseService.finishRoomMatch(this.roomId, winnerId, this.gameState);
     } else {
+      this.gameState.winner = isPlayerWin ? 'Player' : 'CPU';
       // Local match record
       try {
         const today = new Date().toISOString();
@@ -1412,7 +1414,7 @@ export class GameComponent implements OnInit, OnDestroy {
           } else if (newRoom.status === 'finished') {
             // Match finished
             this.gameState = remoteState;
-            const isWinner = newRoom.winner_id === this.currentUserProfile().id;
+            const isWinner = this.gameState.winner === this.currentUserProfile().id;
             this.winner.set(isWinner ? 'player' : 'opponent');
             this.showResultModal.set(true);
             this.cleanupRealtime();
@@ -1420,12 +1422,45 @@ export class GameComponent implements OnInit, OnDestroy {
             // Standard state synchronization during gameplay
             this.gameState = remoteState;
             if (this.isMyTurn()) {
-              this.logMessage.set('Es tu turno. Fase Principal.');
-              this.summonLimitLeft = 1;
-              this.usedSkillsThisTurn = [];
-              this.attackedCardsThisTurn = [];
+              if (this.gameState.phase === 'draw') {
+                if (!this.processedDrawTurn) {
+                  this.processedDrawTurn = true;
+                  this.logMessage.set('Tu Fase de Robo: has robado una carta.');
+                  this.drawCard(this.myRole);
+                  this.summonLimitLeft = 1;
+                  this.usedSkillsThisTurn = [];
+                  this.attackedCardsThisTurn = [];
+                  
+                  // Sync card draw immediately
+                  this.syncOnlineState();
+
+                  setTimeout(async () => {
+                    if (this.gameState.phase === 'draw' && this.isMyTurn()) {
+                      this.gameState.phase = 'main';
+                      this.logMessage.set('Tu Fase Principal: puedes invocar 1 monstruo o activar habilidades.');
+                      this.syncOnlineState();
+                    }
+                  }, 1200);
+                }
+              } else if (this.gameState.phase === 'main') {
+                this.logMessage.set('Tu Fase Principal: puedes invocar 1 monstruo o activar habilidades.');
+                this.summonLimitLeft = 1;
+                this.usedSkillsThisTurn = [];
+                this.attackedCardsThisTurn = [];
+              } else if (this.gameState.phase === 'attack') {
+                this.logMessage.set('Fase de Ataque: puedes elegir tus monstruos para declarar combates.');
+              }
             } else {
-              this.logMessage.set('Esperando el movimiento del oponente...');
+              this.processedDrawTurn = false;
+              if (this.gameState.phase === 'draw') {
+                this.logMessage.set('Fase de Robo del oponente...');
+              } else if (this.gameState.phase === 'main') {
+                this.logMessage.set('Fase Principal del oponente...');
+              } else if (this.gameState.phase === 'attack') {
+                this.logMessage.set('Fase de Ataque del oponente...');
+              } else {
+                this.logMessage.set('Esperando el movimiento del oponente...');
+              }
             }
           }
         }

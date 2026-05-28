@@ -353,15 +353,20 @@ export class SupabaseService {
       .eq('id', roomId);
   }
 
-  async finishRoomMatch(roomId: string, winnerId: string | null): Promise<void> {
+  async finishRoomMatch(roomId: string, winnerId: string | null, finalGameState?: any): Promise<void> {
     if (!this.supabase) throw new Error('Supabase no configurado');
+
+    const updatePayload: any = {
+      status: 'finished'
+    };
+    if (finalGameState) {
+      updatePayload.game_state = finalGameState;
+    }
 
     // Update room status
     await this.supabase
       .from('game_rooms')
-      .update({
-        status: 'finished'
-      })
+      .update(updatePayload)
       .eq('id', roomId);
 
     // Get Room Info to write match history
