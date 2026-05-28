@@ -25,7 +25,7 @@ import { RouterModule } from '@angular/router';
             <span class="text-indigo-500 font-black">01.</span> Introducción
           </h3>
           <p class="text-sm text-slate-550 leading-relaxed font-medium">
-            <strong>PokeDuel</strong> es un duelo estratégico de cartas por turnos que fusiona el universo de Pokémon con la dinámica competitiva de cartas estilo Yu-Gi-Oh!. Enfréntate a la computadora o a otros jugadores en línea usando tu mazo personalizado.
+            <strong>PokeTese</strong> es un duelo estratégico de cartas por turnos que fusiona el universo de Pokémon con la dinámica competitiva de cartas estilo Yu-Gi-Oh!. Enfréntate a la computadora o a otros jugadores en línea usando tu mazo personalizado.
           </p>
         </section>
 

@@ -27,7 +27,7 @@ import { DeckService } from '../services/deck.service';
             ¡Hola, Entrenador!
           </h1>
           <p class="text-white/90 text-sm md:text-base font-semibold leading-relaxed">
-            Bienvenido a PokeDuel, la plataforma definitiva de duelos Pokémon estratégicos en tiempo real. Inspecciona tu Pokédex, arma tu mazo de combate de 25 cartas y enfréntate a oponentes locales o remotos.
+            Bienvenido a PokeTese, la plataforma definitiva de duelos Pokémon estratégicos en tiempo real. Inspecciona tu Pokédex, arma tu mazo de combate de 25 cartas y enfréntate a oponentes locales o remotos.
           </p>
         </div>
       </div>
