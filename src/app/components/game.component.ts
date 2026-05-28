@@ -34,8 +34,18 @@ interface PlayerState {
   template: `
     <div class="max-w-7xl mx-auto px-4 py-4 min-h-[92vh] flex flex-col justify-between text-slate-100">
       
+      <!-- 0. LOADING STATE FOR ONLINE MODE -->
+      <div *ngIf="isOnlineMode && initializingOnline()" class="max-w-md mx-auto my-12 bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl text-center space-y-5 w-full">
+        <div class="relative w-14 h-14 mx-auto">
+          <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
+          <div class="absolute inset-2 bg-slate-950 rounded-full flex items-center justify-center text-lg">⚔️</div>
+        </div>
+        <h3 class="text-lg font-bold text-slate-200 font-display">Conectando al servidor...</h3>
+        <p class="text-xs text-slate-400 font-medium">Estableciendo conexión con Supabase para el modo multijugador.</p>
+      </div>
+
       <!-- 1. MATCHMAKING SCREEN (Only shown in online mode when not playing) -->
-      <div *ngIf="isOnlineMode && !isPlaying()" class="max-w-md mx-auto my-12 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 w-full animate-fade-in">
+      <div *ngIf="isOnlineMode && !isPlaying() && !initializingOnline()" class="max-w-md mx-auto my-12 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 w-full animate-fade-in">
         <h2 class="text-3xl font-extrabold font-display text-center text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-300 uppercase">
           MULTIJUGADOR
         </h2>
@@ -514,6 +524,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
   isOnlineMode = false;
+  initializingOnline = signal(false);
   
   // Game state representation
   gameState: GameState = {
@@ -555,7 +566,11 @@ export class GameComponent implements OnInit, OnDestroy {
   animatingDestroyedRole: 'p1' | 'p2' | null = null;
   animatingDestroyedSlot: number | null = null;
 
-  constructor() {}
+  constructor() {
+    // Establecer isOnlineMode inmediatamente en el constructor para que
+    // el template se renderice correctamente desde el primer ciclo de detección
+    this.isOnlineMode = this.router.url.includes('online');
+  }
 
   async ngOnInit() {
     try {
@@ -564,14 +579,13 @@ export class GameComponent implements OnInit, OnDestroy {
       console.error('Error inicializando SQLite:', e);
     }
 
-    this.isOnlineMode = this.router.url.includes('online');
-
     if (this.isOnlineMode) {
+      this.initializingOnline.set(true);
       try {
         const configured = await this.supabaseService.initialize();
         if (!configured) {
           console.warn('Supabase no está configurado para modo online.');
-          // El template ya muestra el mensaje de "debes iniciar sesión"
+          this.initializingOnline.set(false);
           return;
         }
 
@@ -587,10 +601,9 @@ export class GameComponent implements OnInit, OnDestroy {
         }
       } catch (e) {
         console.error('Error inicializando Supabase para modo online:', e);
+      } finally {
+        this.initializingOnline.set(false);
       }
-      // El template se encarga de mostrar el estado correcto:
-      // - Si no hay usuario logueado, muestra el enlace para iniciar sesión
-      // - Si hay usuario, muestra las opciones de crear/unirse a sala
     } else {
       // Local CPU game setup
       this.startCpuGame();
